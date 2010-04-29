@@ -4,7 +4,7 @@
 #
 ################################################################################
 # This function runs all of the subordinate functions in concert:
-def runPBS(commandString, fileList = (), wallTime = 30*60, nodes = 'default', ppn = 'default',repspp = 1, buildDir = './', hiddenDir = './.submitDir', jobHandle = 'currJob', server = 'normal', outputDir = 'simResults', compiler = 'None', user = 'ncain', wallTimeEstCount = 20, includeIDAsArg = 0, dryRun = 0):
+def runPBS(commandString, fileList = (), wallTime = 30*60, nodes = 'default', ppn = 'default',repspp = 1, buildDir = './', hiddenDir = './.submitDir', jobHandle = 'currJob', server = 'normal', outputDir = 'simResults', compiler = 'None', user = 'ncain', wallTimeEstCount = 20, includeIDAsArg = 0, dryRun = 0, localRun = 0):
 	import os
 
 	# Check to make sure fileList is in fact a list:
@@ -37,6 +37,7 @@ def runPBS(commandString, fileList = (), wallTime = 30*60, nodes = 'default', pp
 	settings['repspp'] = repspp
 	settings['includeIDAsArg'] = includeIDAsArg
 	settings['dryRun'] = dryRun
+	settings['localRun'] = localRun
 	
 	settings['qSubCommand'] = 'qsub -S /bin/tcsh -q '
 	if server=='long':
@@ -91,20 +92,31 @@ def runPBS(commandString, fileList = (), wallTime = 30*60, nodes = 'default', pp
 	makeSubmissionFiles(settings)
 	copyFiles(settings)
 	
-	if dryRun == 0:
-		os.system(os.path.join(settings['hiddenDir'],settings['qSubFileName']))
-		
-		if settings['interactive'] == 0:
-			waitForJobs(settings)
+	if dryRun == 1:
+		print 'Dryrunning; Command to be called: ' + os.path.join(settings['hiddenDir'],settings['qSubFileName'])
+		userInput = raw_input("  Press <return> to continue...")
+	else:
+		if localRun == 1:
+			print 'Local run mode selected.'
+			userInput = raw_input("  Press <return> to continue...")
+			
+			from subprocess import call as call
+			for i in range(1,settings['nodes']*settings['ppn']*settings['repspp']+1):
+				call(os.path.join(settings['hiddenDir'], settings['jobHandle'] + '_' + str(i),settings['slaveFileNamePrefix'] + str(i) + '.csh'),shell=True)
+			
+		else:		
+			os.system(os.path.join(settings['hiddenDir'],settings['qSubFileName']))
+			
+			if settings['interactive'] == 0:
+				waitForJobs(settings)
 		
 		print '  Collecting results:'
 		collectJobs(settings)
 
 		print '  Deleting temporary files:'
 		nukeDirs(settings['hiddenDir'])
-	else:
-		print 'Dryrunning; Command to be called: ' + os.path.join(settings['hiddenDir'],settings['qSubFileName'])
-		userInput = raw_input("  Press <return> to continue...")
+
+
 
 
 	return settings
@@ -147,10 +159,12 @@ def displaySettings(settings, continuePrompt = 1):
 	import os
 
 	print "********************************"
-	if settings['dryRun'] == 0:
-		print " Teragrid PBS job ready to run:"
-	else:
+	if settings['dryRun'] == 1:
 		print " Teragrid PBS job ready to run: DRYRUN!"
+	elif settings['localRun'] == 1:
+		print " Teragrid PBS job ready to run: LOCAL RUN!"
+	else:
+		print " Teragrid PBS job ready to run:"	
 	print "********************************"
 	print " "
 	print "Job Details:"
@@ -410,7 +424,7 @@ def makeSettingsFile(paramDict, npp, fileName='settingsFile.dat',writeDir='./', 
 
 ################################################################################
 # This function loads settings from settings file based on uniqueID
-def saveToFile(saveFileName, myVars):
+def saveToFile(myVars, saveFileName = 'simResults.dat'):
 	fOut = open(saveFileName,'w')
 	varNames = myVars.keys()
 	for varName in varNames:
@@ -427,7 +441,7 @@ def getFileIterator(myDir, fileString):
 
 ################################################################################
 # This function gets saved variables from a directory
-def getSavedVariables(resultDir, resultFileName, resultVariables):
+def getSavedVariables(resultVariables, resultDir = 'simResults', resultFileName = 'simResults.dat'): 
 	
 	# Get file iterator
 	fileIterator = getFileIterator(resultDir, resultFileName)
