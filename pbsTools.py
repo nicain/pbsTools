@@ -102,7 +102,7 @@ def runPBS(commandString, fileList = (), wallTime = 30*60, nodes = 'default', pp
 			
 			from subprocess import call as call
 			if settings['server'] == 'wallTimeEstimate':
-				os.chdir(os.path.join(settings['hiddenDir'], settings['jobHandle'] + '_1_' + str(settings['repspp']))
+				os.chdir(os.path.join(settings['hiddenDir'], settings['jobHandle'] + '_1_' + str(settings['repspp'])))
 				call('python wallTimeEst.py',shell=True)
 				os.chdir(settings['cwd'])
 			else:
