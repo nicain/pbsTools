@@ -342,7 +342,7 @@ def makeSubmissionFiles(settings):
 	
 	# In wallTimeEstimate mode, write wallTimeEst.py file:
 	if settings['server']=='wallTimeEstimate':
-		currentFileName = os.path.join(settings['hiddenDir'], settings['jobHandle'] + '_' + str(counter),'wallTimeEst.py')
+		currentFileName = os.path.join(settings['hiddenDir'], settings['jobHandle'] + '_1_' + str(settings['repspp']),'wallTimeEst.py')
 		currentFile=open(currentFileName, 'w')
 
 		currentFile.write('import timeit, numpy\n')
