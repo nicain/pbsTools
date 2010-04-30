@@ -359,12 +359,21 @@ def makeSubmissionFiles(settings):
 		currentFile.write('f.close\n')
 		currentFile.close()
 		
-		
 	# Write slave_#.csh files
-	for i in range(1,settings['nodes']*settings['ppn']*settings['repspp']+1):
-		currentSlaveFileName = os.path.join(settings['hiddenDir'], settings['jobHandle'] + '_' + str(i), settings['slaveFileNamePrefix'] + str(i) + '.csh')
+	if settings['server']=='wallTimeEstimate':
+		iterMax=1
+	else:
+		iterMax=settings['nodes']*settings['ppn']*settings['repspp']
+			
+	for i in range(1,iterMax+1):
+		if settings['server']=='wallTimeEstimate':
+			currentSlaveDir = os.path.join(settings['hiddenDir'], settings['jobHandle'] + '_1_' + str(settings['repspp']))
+		else:
+			currentSlaveDir = os.path.join(settings['hiddenDir'], settings['jobHandle'] + '_' + str(i))
+
+		currentSlaveFileName = os.path.join(currentSlaveDir, settings['slaveFileNamePrefix'] + str(i) + '.csh')
 		currentSlaver=open(currentSlaveFileName, 'w')
-		currentSlaver.write('cd ' + os.path.join(settings['hiddenDir'], settings['jobHandle'] + '_' + str(i)) + '\n')
+		currentSlaver.write('cd ' + currentSlaveDir + '\n')
 		if settings['includeIDAsArg'] == 0:
 			currentSlaver.write(settings['commandString'])
 		else:
