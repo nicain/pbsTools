@@ -293,8 +293,11 @@ def createJobDirs(settings):
 	os.mkdir(os.path.join(settings['hiddenDir'], settings['PBSDir']))
 	
 	# Run a loop to create subordinate run directories:
-	for i in range(1,settings['nodes']*settings['ppn']*settings['repspp']+1):
-		os.mkdir(os.path.join(settings['hiddenDir'], settings['jobHandle'] + '_' + str(i)))
+	if settings['server'] == 'wallTimeEstimate':
+		os.mkdir(os.path.join(settings['hiddenDir'], settings['jobHandle'] + '_1_' + str(settings['repspp'])))
+	else:
+		for i in range(1,settings['nodes']*settings['ppn']*settings['repspp']+1):
+			os.mkdir(os.path.join(settings['hiddenDir'], settings['jobHandle'] + '_' + str(i)))
 
 	return 0
 	
@@ -327,7 +330,7 @@ def makeSubmissionFiles(settings):
 		for j in range(1,settings['ppn']+1):
 			if settings['server']=='wallTimeEstimate':
 				counter=counter+1
-				currentNoder.write('cd ' + os.path.join(settings['hiddenDir'], settings['jobHandle'] + '_' + str(counter)) + '\n')
+				currentNoder.write('cd ' + os.path.join(settings['hiddenDir'], settings['jobHandle'] + '_1_' + str(settings['repspp']) + '\n')
 				currentNoder.write('python wallTimeEst.py & \n')
 			else:
 				for k in range(1,settings['repspp']+1):
