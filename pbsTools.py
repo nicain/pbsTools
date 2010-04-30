@@ -6,6 +6,7 @@
 # This function runs all of the subordinate functions in concert:
 def runPBS(commandString, fileList = (), wallTime = 30*60, nodes = 'default', ppn = 'default',repspp = 1, buildDir = './', hiddenDir = './.submitDir', jobHandle = 'currJob', server = 'normal', outputDir = 'simResults', compiler = 'None', user = 'ncain', wallTimeEstCount = 20, includeIDAsArg = 0, dryRun = 0, localRun = 0):
 	import os
+	from subprocess import call as call
 
 	# Check to make sure fileList is in fact a list:
 	if not isinstance(fileList,(list,tuple)):
@@ -100,7 +101,6 @@ def runPBS(commandString, fileList = (), wallTime = 30*60, nodes = 'default', pp
 			print 'Local run mode selected.'
 			userInput = raw_input("  Press <return> to continue...")
 			
-			from subprocess import call as call
 			if settings['server'] == 'wallTimeEstimate':
 				os.chdir(os.path.join(settings['hiddenDir'], settings['jobHandle'] + '_1_' + str(settings['repspp'])))
 				call('python wallTimeEst.py',shell=True)
@@ -123,9 +123,11 @@ def runPBS(commandString, fileList = (), wallTime = 30*60, nodes = 'default', pp
 				
 		# Either local or not, if we did a wallTimeEst, display results:
 		if settings['server'] == 'wallTimeEstimate':
+			print "********************************"
+			print "* Wall-Time Estimate:"
+			print "********************************"
 			for file in getFileIterator(settings['outputDir'], 'wallTimeEstData.dat'):
-				print file
-				#call('more ' + file)
+				scratch = call('more ' + file, shell=True)
 
 	return settings
 	
