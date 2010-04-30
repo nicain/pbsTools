@@ -123,7 +123,7 @@ def runPBS(commandString, fileList = (), wallTime = 30*60, nodes = 'default', pp
 				
 		# Either local or not, if we did a wallTimeEst, display results:
 		if settings['server'] == 'wallTimeEstimate':
-			for file in getFileIterator(settings['outputDir'], wallTimeEstData.dat):
+			for file in getFileIterator(settings['outputDir'], 'wallTimeEstData.dat'):
 				call('more ' + file)
 
 	return settings
