@@ -330,7 +330,7 @@ def makeSubmissionFiles(settings):
 		for j in range(1,settings['ppn']+1):
 			if settings['server']=='wallTimeEstimate':
 				counter=counter+1
-				currentNoder.write('cd ' + os.path.join(settings['hiddenDir'], settings['jobHandle'] + '_1_' + str(settings['repspp']) + '\n')
+				currentNoder.write('cd ' + os.path.join(settings['hiddenDir'], settings['jobHandle'] + '_1_' + str(settings['repspp'])) + '\n')
 				currentNoder.write('python wallTimeEst.py & \n')
 			else:
 				for k in range(1,settings['repspp']+1):
