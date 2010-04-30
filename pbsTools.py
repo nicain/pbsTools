@@ -446,14 +446,15 @@ def getFileIterator(myDir, fileString):
 
 ################################################################################
 # This function gets saved variables from a directory
-def getSavedVariables(resultVariables, resultDir = 'simResults', resultFileName = 'simResults.dat'): 
+def getSavedVariables(resultVariables, outputDir = 'simResults', resultFileName = 'simResults.dat'): 
 	
 	# Get file iterator
-	fileIterator = getFileIterator(resultDir, resultFileName)
+	fileIterator = getFileIterator(outputDir, resultFileName)
 
 	resultList = [{}]*len(fileIterator)
 	
 	def internalFunction(myFile, resultVariables):
+		from numpy import array as array # Sometimes I return arrays, and I want to be able to read them!
 		tempDict = {}
 		execfile(myFile)
 		for variable in resultVariables:
