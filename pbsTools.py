@@ -348,7 +348,7 @@ def makeSubmissionFiles(settings):
 		currentFile.write('import timeit, numpy\n')
 		currentFile.write('numberOfTrials=' + str(settings['wallTimeEstCount']) + '\n')
 		currentFile.write('repspp=' + str(settings['repspp']) + '\n')
-		currentFile.write('totalTimeList=timeit.Timer(\'os.system(\"' + os.path.join(settings['hiddenDir'], settings['jobHandle'] + '_' + str(1), settings['slaveFileNamePrefix'] + str(i) + '.csh') + '\")\',\'import os\').repeat(*[numberOfTrials,repspp])\n')
+		currentFile.write('totalTimeList=timeit.Timer(\'os.system(\"' + os.path.join(settings['hiddenDir'], settings['jobHandle'] + '_1_' + str(settings['repspp']), settings['slaveFileNamePrefix'] + str(1) + '.csh') + '\")\',\'import os\').repeat(*[numberOfTrials,repspp])\n')
 		currentFile.write('totalTime = numpy.array(totalTimeList)\n')
 		currentFile.write('mean = totalTime.mean()\n')
 		currentFile.write('stddev = totalTime.std()\n')
@@ -389,10 +389,12 @@ def copyFiles(settings):
 	import shutil, os
 	
 	for file in settings['fileList']:
-		for i in range(1,settings['nodes']*settings['ppn']*settings['repspp']+1):
-			# shutil.copyfile(os.path.join(settings['buildDir'],file),os.path.join(settings['hiddenDir'], settings['jobHandle'] + '_' + str(i),file))
-			os.symlink(os.path.join(settings['buildDir'],file),os.path.join(settings['hiddenDir'], settings['jobHandle'] + '_' + str(i),file))
-			os.system('chmod +x ' + os.path.join(settings['hiddenDir'], settings['jobHandle'] + '_' + str(i),file))
+		if settings['server']=='wallTimeEstimate':
+			os.symlink(os.path.join(settings['buildDir'],file),os.path.join(settings['hiddenDir'], settings['jobHandle'] + '_1_' + str(settings['repspp']),file))
+		else:
+			for i in range(1,settings['nodes']*settings['ppn']*settings['repspp']+1):
+				os.symlink(os.path.join(settings['buildDir'],file),os.path.join(settings['hiddenDir'], settings['jobHandle'] + '_' + str(i),file))
+				#os.system('chmod +x ' + os.path.join(settings['hiddenDir'], settings['jobHandle'] + '_' + str(i),file)) # Not sure if this line is still necessary
 
 ################################################################################
 # This function creates settings file based on a parameter sweep dictionary
