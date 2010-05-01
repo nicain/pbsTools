@@ -127,7 +127,7 @@ def runPBS(commandString, fileList = (), wallTime = 30*60, nodes = 'default', pp
 			print "* Wall-Time Estimate, each Processor:"
 			print "********************************"
 			for file in getFileIterator(settings['outputDir'], 'wallTimeEstData.dat'):
-				scratch = call('more ' + file, shell=True)
+				scratch = call('cat ' + file, shell=True)
 
 	return settings
 	
@@ -399,11 +399,16 @@ def copyFiles(settings):
 	import shutil, os
 	
 	for file in settings['fileList']:
+		(currDir, currFile) = os.path.split(file)
+		if currDir == '':
+			sourceDir = settings['buildDir']
+		else:
+			sourceDir = currDir
 		if settings['server']=='wallTimeEstimate':
-			os.symlink(os.path.join(settings['buildDir'],file),os.path.join(settings['hiddenDir'], settings['jobHandle'] + '_1_' + str(settings['repspp']),file))
+			os.symlink(os.path.join(sourceDir,file),os.path.join(settings['hiddenDir'], settings['jobHandle'] + '_1_' + str(settings['repspp']),currFile))
 		else:
 			for i in range(1,settings['nodes']*settings['ppn']*settings['repspp']+1):
-				os.symlink(os.path.join(settings['buildDir'],file),os.path.join(settings['hiddenDir'], settings['jobHandle'] + '_' + str(i),file))
+				os.symlink(os.path.join(sourceDir,file),os.path.join(settings['hiddenDir'], settings['jobHandle'] + '_' + str(i),currFile))
 				#os.system('chmod +x ' + os.path.join(settings['hiddenDir'], settings['jobHandle'] + '_' + str(i),file)) # Not sure if this line is still necessary
 
 ################################################################################
@@ -452,16 +457,6 @@ def makeSettingsFile(paramDict, npp, fileName='settingsFile.dat',writeDir='./', 
 	return counter
 
 ################################################################################
-# This function loads settings from settings file based on uniqueID
-def saveToFile(myVars, saveFileName = 'simResults.dat'):
-	fOut = open(saveFileName,'w')
-	varNames = myVars.keys()
-	for varName in varNames:
-		print >> fOut, varName + '=' + repr(myVars[varName])
-	fOut.close()	
-	return
-
-################################################################################
 # This function creates a file iterator based on an input string:
 def getFileIterator(myDir, fileString):
 	import glob, os
@@ -469,26 +464,41 @@ def getFileIterator(myDir, fileString):
 	return glob.glob(os.path.join(os.path.abspath(os.path.expanduser(myDir)),'*' + fileString + '*'))
 
 ################################################################################
-# This function gets saved variables from a directory
-def getSavedVariables(resultVariables, outputDir = 'simResults', resultFileName = 'simResults.dat'): 
+# This function loads settings from settings file based on uniqueID
+def pickle(myVars, saveFileName = 'simResults.dat'):
+	import pickle as pickleModule
 	
-	# Get file iterator
-	fileIterator = getFileIterator(outputDir, resultFileName)
+	fOut = open(saveFileName,'w')
+	pickleModule.dump(myVars,fOut)
+	fOut.close()	
+	return
 
-	resultList = [{}]*len(fileIterator)
+################################################################################
+# This function loads settings from settings file based on uniqueID
+def unpickle(saveFileName = 'simResults.dat'):
+	import pickle as pickleModule
 	
-	def internalFunction(myFile, resultVariables):
-		from numpy import array as array # Sometimes I return arrays, and I want to be able to read them!
-		tempDict = {}
-		execfile(myFile)
-		for variable in resultVariables:
-			tempDict[variable] = eval(variable)
-		return tempDict
+	fIn = open(saveFileName,'w')
+	myPickle = pickleModule.load(fIn)
+	fIn.close()	
+	return myPickle
 
-	# Import values into a list
+################################################################################
+# This function gets saved variables from a list of similarly named files in a directory:
+def getFromPickleJar(loadDir = 'simResults', fileNameSubString = 'simResults.dat'): 
+	import pickle
+	
+	# Get file iterator:
+	fileIterator = getFileIterator(loadDir, fileNameSubString)
+
+	# Set up output array:
+	resultList = [0]*len(fileIterator)
+
+	# Import values into a list:
 	counter = 0
 	for myFile in fileIterator:
-		resultList[counter] = internalFunction(myFile, resultVariables)
+		fIn = open(myFile)
+		resultList[counter] =  pickle.load(fIn)
 		counter += 1
 	
 	return resultList
