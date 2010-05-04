@@ -189,7 +189,7 @@ def displaySettings(settings, continuePrompt = 1):
 	print "  Nodes: " + str(settings['nodes'])
 	print "  Processors Per Node (PPN): " + str(settings['ppn'])
 	print "  Simulations Per Processor (repsPP): " + str(settings['repspp'])
-	print "  Interactive Mode: " + str(settings['nodes'])
+	print "  Interactive Mode: " + str(settings['interactive'])
 	print " "
 	print "Build Details:"	
 	print "  Build Directory: " + settings['buildDir']
