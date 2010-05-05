@@ -371,7 +371,10 @@ def makeSubmissionFiles(settings):
 		currentPBSFileName = os.path.join(settings['hiddenDir'], settings['PBSDir'], settings['PBSFileNamePrefix'] + str(i)) + '.pbs'
 		currentNoder=open(currentPBSFileName, 'w')
 		currentNoder.write('#PBS -l walltime=' + str(time.strftime("%H:%M:%S",time.gmtime(settings['wallTime']))) + '\n')
-		currentNoder.write('#PBS -l nodes=1:ppn=' + str(settings['ppn']) + '\n')
+		if settings['runLocation'] == 'abe' or settings['runLocation'] == 'local':
+			currentNoder.write('#PBS -l nodes=1:ppn=' + str(settings['ppn']) + '\n')
+		elif settings['runLocation'] == 'steele':
+			currentNoder.write('#PBS -l mem=1GB:arch=linux:ncpus=' + str(settings['ppn']) + '\n')
 		currentNoder.write('set NP=`wc -l $PBS_NODEFILE | cut -d\'/\' -f1`' + '\n')
 		currentNoder.write('set JOBID=`echo $PBS_JOBID | cut -d\'.\' -f1`' + '\n')
 		for j in range(1,settings['ppn']+1):
