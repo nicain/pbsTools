@@ -81,25 +81,27 @@ def runPBS(commandString, fileList = (), runLocation = 'local', runType = 'wallT
 			settings['qSubCommand'] = settings['qSubCommand'] + 'normal '
 			settings['interactive'] = 0
 			settings['server'] = 'normal'
-	
-	# elif runLocation == 'steele':
-		# if runType == 'wallTimeEstimate':
-			# if nodes == 'default': settings['nodes'] = 600
-			# else: settings['nodes'] = nodes
-			# if ppn == 'default': settings['ppn']=8
-			# else: settings['ppn'] = ppn
-			# settings['qSubCommand'] = settings['qSubCommand'] + 'long '
-			# settings['interactive'] = 0
-			# settings['server'] = 'long'
 			
-		# elif runType == 'batch':
-			# if nodes == 'default': settings['nodes'] = 600
-			# else: settings['nodes'] = nodes
-			# if ppn == 'default': settings['ppn']=8
-			# else: settings['ppn'] = ppn
-			# settings['qSubCommand'] = settings['qSubCommand'] + 'long '
-			# settings['interactive'] = 0
-			# settings['server'] = 'long'
+	elif runLocation == 'steele':
+		if runType == 'wallTimeEstimate':
+			settings['nodes'] = 1
+			settings['ppn'] = 1
+			settings['repspp'] = 1
+			settings['qSubCommand'] = settings['qSubCommand'] + 'tg_short '
+			settings['interactive'] = 0
+			settings['server'] = 'wallTimeEstimate'
+			settings['wallTime'] = 30*60
+			
+		elif runType == 'batch':
+			if nodes == 'default': settings['nodes'] = 1
+			else: settings['nodes'] = nodes
+			if ppn == 'default': settings['ppn']=8
+			else: settings['ppn'] = ppn
+			settings['qSubCommand'] = settings['qSubCommand'] + 'tg_workq '
+			settings['interactive'] = 0
+			settings['server'] = 'normal'
+	
+
 	
 	else:
 		print 'Invalid Teragrid server type: ',server,'; exiting...'
