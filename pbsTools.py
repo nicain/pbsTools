@@ -207,7 +207,7 @@ def displaySettings(settings, continuePrompt = 1):
 	if settings['dryRun'] == 1: 
 		banner = banner + 'DRYRUN '
 	if settings['runLocation'] == 'local': 
-		banner = banner + 'LOCAL RUN '
+		banner = banner + 'LOCALRUN '
 	if settings['runType'] == 'wallTimeEstimate': 
 		banner = banner + 'WALLTIMEESTIMATE '
 
