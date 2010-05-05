@@ -181,7 +181,7 @@ def collectJobs(settings):
 			fullCurrDir = os.path.join(root,currDir)
 			for newRoot, newDirs, files in os.walk(fullCurrDir):
 				for file in files:
-					if not os.path.islink(os.path.abspath(os.path.join(newRoot,file))):
+					if not os.path.islink(os.path.abspath(os.path.join(newRoot,file))) and not file == 'jobCompleted':
 						shutil.copyfile(os.path.abspath(os.path.join(newRoot,file)),os.path.join(settings['outputDir'],settings['jobHandle']+'_'+file+'_'+str(uuid.uuid4())))
 	
 	# Grab error and output logs for later use.
@@ -279,10 +279,18 @@ def waitForJobs(settings):
 		checkForCompletion=os.popen('qstat -u ' + settings['user'] + ' | wc -l')
 		numberOfLines=int(checkForCompletion.read())
 		checkForCompletion.close()
+		
+		# Check each job directory for the standard out file:
+		numberCompleted = 0
+		for root, dirs, files in os.walk(settings['hiddenDir']):
+			for currDir in dirs:
+				if os.path.isfile(os.path.join(root,currDir,'jobCompleted')):
+					numberCompleted += 1
+				
 		if numberOfLines == 0:
 			breakout = 1
 		else:
-			print str(numberOfLines - 5) + " jobs remain."
+			print str(numberOfLines - 5) + " jobs remain. (" + str(numberCompleted) + '_' + str(settings['nodes']*settings['ppn']*settings['repspp']) + ")"
 
 ################################################################################
 # This function creates a sequence of job directories for the pbs script:
@@ -425,9 +433,10 @@ def makeSubmissionFiles(settings):
 		currentSlaver=open(currentSlaveFileName, 'w')
 		currentSlaver.write('cd ' + currentSlaveDir + '\n')
 		if settings['includeIDAsArg'] == 0:
-			currentSlaver.write(settings['commandString'])
+			currentSlaver.write(settings['commandString'] + '\n')
 		else:
-			currentSlaver.write(settings['commandString'] + ' ' + str(i))
+			currentSlaver.write(settings['commandString'] + ' ' + str(i) + '\n')
+		currentSlaver.write('touch jobCompleted')
 		currentSlaver.close()
 		os.system('chmod +x ' + currentSlaveFileName)
 
@@ -518,7 +527,7 @@ def pickle(myVars, saveFileName = 'simResults.dat'):
 def unpickle(saveFileName = 'simResults.dat'):
 	import pickle as pickleModule
 	
-	fIn = open(saveFileName,'w')
+	fIn = open(saveFileName,'r')
 	myPickle = pickleModule.load(fIn)
 	fIn.close()	
 	return myPickle
