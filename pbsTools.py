@@ -415,6 +415,9 @@ def makeSubmissionFiles(settings):
 		currentFile.write('print >> f, \"Standard Deviation: \", stddev\n')
 		currentFile.write('print >> f, \"Suggested wallTime: \", mean+4*stddev\n')
 		currentFile.write('f.close\n')
+		currentFile.write('\n')
+		currentFile.write('from subprocess import call as call\n')
+		currentFile.write('call("touch jobCompleted", shell=True)')
 		currentFile.close()
 		
 	# Write slave_#.csh files
@@ -436,7 +439,8 @@ def makeSubmissionFiles(settings):
 			currentSlaver.write(settings['commandString'] + '\n')
 		else:
 			currentSlaver.write(settings['commandString'] + ' ' + str(i) + '\n')
-		currentSlaver.write('touch jobCompleted')
+		if settings['runType'] != 'wallTimeEstimate':
+			currentSlaver.write('touch jobCompleted')
 		currentSlaver.close()
 		os.system('chmod +x ' + currentSlaveFileName)
 
