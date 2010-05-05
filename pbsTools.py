@@ -205,7 +205,7 @@ def displaySettings(settings, continuePrompt = 1):
 	print "********************************"
 	if settings['dryRun'] == 1:
 		print " Teragrid PBS job ready to run: DRYRUN!"
-	elif settings['runType'] == 'localRun':
+	elif settings['runLocation'] == 'localRun':
 		print " Teragrid PBS job ready to run: LOCAL RUN!"
 	else:
 		print " Teragrid PBS job ready to run:"	
