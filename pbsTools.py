@@ -71,6 +71,7 @@ def runPBS(commandString, fileList = (), runLocation = 'local', runType = 'wallT
 			settings['qSubCommand'] = settings['qSubCommand'] + 'debug '
 			settings['interactive'] = 0
 			settings['server'] = 'wallTimeEstimate'
+			settings['wallTime'] = 30*60
 			
 		elif runType == 'batch':
 			if nodes == 'default': settings['nodes'] = 1
