@@ -81,25 +81,27 @@ def runPBS(commandString, fileList = (), runLocation = 'local', runType = 'wallT
 			settings['qSubCommand'] = settings['qSubCommand'] + 'normal '
 			settings['interactive'] = 0
 			settings['server'] = 'normal'
-	
-	# elif runLocation == 'steele':
-		# if runType == 'wallTimeEstimate':
-			# if nodes == 'default': settings['nodes'] = 600
-			# else: settings['nodes'] = nodes
-			# if ppn == 'default': settings['ppn']=8
-			# else: settings['ppn'] = ppn
-			# settings['qSubCommand'] = settings['qSubCommand'] + 'long '
-			# settings['interactive'] = 0
-			# settings['server'] = 'long'
 			
-		# elif runType == 'batch':
-			# if nodes == 'default': settings['nodes'] = 600
-			# else: settings['nodes'] = nodes
-			# if ppn == 'default': settings['ppn']=8
-			# else: settings['ppn'] = ppn
-			# settings['qSubCommand'] = settings['qSubCommand'] + 'long '
-			# settings['interactive'] = 0
-			# settings['server'] = 'long'
+	elif runLocation == 'steele':
+		if runType == 'wallTimeEstimate':
+			settings['nodes'] = 1
+			settings['ppn'] = 1
+			settings['repspp'] = 1
+			settings['qSubCommand'] = settings['qSubCommand'] + 'tg_short '
+			settings['interactive'] = 0
+			settings['server'] = 'wallTimeEstimate'
+			settings['wallTime'] = 30*60
+			
+		elif runType == 'batch':
+			if nodes == 'default': settings['nodes'] = 1
+			else: settings['nodes'] = nodes
+			if ppn == 'default': settings['ppn']=8
+			else: settings['ppn'] = ppn
+			settings['qSubCommand'] = settings['qSubCommand'] + 'tg_workq '
+			settings['interactive'] = 0
+			settings['server'] = 'normal'
+	
+
 	
 	else:
 		print 'Invalid Teragrid server type: ',server,'; exiting...'
@@ -369,7 +371,10 @@ def makeSubmissionFiles(settings):
 		currentPBSFileName = os.path.join(settings['hiddenDir'], settings['PBSDir'], settings['PBSFileNamePrefix'] + str(i)) + '.pbs'
 		currentNoder=open(currentPBSFileName, 'w')
 		currentNoder.write('#PBS -l walltime=' + str(time.strftime("%H:%M:%S",time.gmtime(settings['wallTime']))) + '\n')
-		currentNoder.write('#PBS -l nodes=1:ppn=' + str(settings['ppn']) + '\n')
+		if settings['runLocation'] == 'abe' or settings['runLocation'] == 'local':
+			currentNoder.write('#PBS -l nodes=1:ppn=' + str(settings['ppn']) + '\n')
+		elif settings['runLocation'] == 'steele':
+			currentNoder.write('#PBS -l mem=1GB:arch=linux:ncpus=' + str(settings['ppn']) + '\n')
 		currentNoder.write('set NP=`wc -l $PBS_NODEFILE | cut -d\'/\' -f1`' + '\n')
 		currentNoder.write('set JOBID=`echo $PBS_JOBID | cut -d\'.\' -f1`' + '\n')
 		for j in range(1,settings['ppn']+1):
