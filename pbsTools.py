@@ -4,7 +4,17 @@
 #
 ################################################################################
 # This function runs all of the subordinate functions in concert:
-def runPBS(commandString, fileList = (), wallTime = 30*60, nodes = 'default', ppn = 'default',repspp = 1, buildDir = './', hiddenDir = './.submitDir', jobHandle = 'currJob', server = 'normal', outputDir = 'simResults', compiler = 'None', user = 'ncain', wallTimeEstCount = 20, includeIDAsArg = 0, dryRun = 0, localRun = 0):
+def runPBS(commandString, fileList = (), runLocation = 'local', runType = 'wallTimeEstimate', wallTime = 30*60, nodes = 'default', ppn = 'default',repspp = 'default', buildDir = './', hiddenDir = './.submitDir', jobHandle = 'currJob', server = 'normal', outputDir = 'simResults', compiler = 'None', user = 'ncain', wallTimeEstCount = 20, includeIDAsArg = 0, dryRun = 1):
+
+	##### Option for runLocation ######
+	# local (default)
+	# steele
+	# abe
+
+	##### Option for runType ######
+	# wallTimeEstimate (default)
+	# batch
+
 	import os
 	from subprocess import call as call
 
@@ -23,6 +33,9 @@ def runPBS(commandString, fileList = (), wallTime = 30*60, nodes = 'default', pp
 	settings['PBSDir'] = 'PBSTemp'					# Probably never need to change
 	settings['SlaveDir'] = 'SlaveTemp'				# Probably never need to change
 
+	settings['dryRun'] = dryRun
+	settings['runLocation'] = runLocation
+	settings['runType'] = runType
 	settings['user'] = user
 	settings['fileList'] = fileList
 	settings['buildDir'] = os.path.abspath(os.path.expanduser(buildDir))
@@ -30,55 +43,63 @@ def runPBS(commandString, fileList = (), wallTime = 30*60, nodes = 'default', pp
 	settings['hiddenDir'] = os.path.abspath(os.path.expanduser(hiddenDir))
 	settings['commandString'] = commandString
 	settings['jobHandle'] = jobHandle
-	settings['server'] = server
 	settings['compiler'] = compiler
 	settings['wallTime'] = wallTime
 	settings['cwd'] = os.getcwd()
 	settings['wallTimeEstCount'] = wallTimeEstCount
 	settings['repspp'] = repspp
 	settings['includeIDAsArg'] = includeIDAsArg
-	settings['dryRun'] = dryRun
-	settings['localRun'] = localRun
 	
 	settings['qSubCommand'] = 'qsub -S /bin/tcsh -q '
-	if server=='long':
-		if nodes == 'default': settings['nodes'] = 600
+	
+	if runLocation == 'local':
+		if nodes == 'default': settings['nodes'] = 1
 		else: settings['nodes'] = nodes
-		if ppn == 'default': settings['ppn']=8
+		if ppn == 'default': settings['ppn']=1
 		else: settings['ppn'] = ppn
-		settings['qSubCommand'] = settings['qSubCommand'] + 'long '
+		if repspp == 'default': settings['repspp']=1
+		else: settings['repspp'] = repspp
+		settings['qSubCommand'] = 'null'
 		settings['interactive'] = 0
-		settings['server'] = 'long'
-	elif server=='normal':
-		if nodes == 'default': settings['nodes'] = 600
-		else: settings['nodes'] = nodes
-		if ppn == 'default': settings['ppn']=8
-		else: settings['ppn'] = ppn
-		settings['qSubCommand'] = settings['qSubCommand'] + 'normal '
-		settings['interactive'] = 0
-		settings['server'] = 'normal'
-	elif server=='wide':
-		if nodes == 'default': settings['nodes'] = 1200
-		else: settings['nodes'] = nodes
-		if ppn == 'default': settings['ppn']=8
-		else: settings['ppn'] = ppn
-		settings['qSubCommand'] = settings['qSubCommand'] + 'wide '
-		settings['interactive'] = 0
-		settings['server'] = 'wide'
-	elif server=='debug':
-		settings['nodes'] = 1
-		settings['ppn']=8
-		settings['qSubCommand'] = settings['qSubCommand'] + 'debug '
-		settings['interactive'] = 1
-		settings['server'] = 'debug'
-		settings['wallTime'] = 30*60
-	elif server=='wallTimeEstimate':
-		settings['nodes'] = 1
-		settings['ppn']=1
-		settings['qSubCommand'] = settings['qSubCommand'] + 'debug '
-		settings['interactive'] = 0
-		settings['server'] = 'wallTimeEstimate'
-		settings['wallTime'] = 30*60
+		settings['server'] = 'null'
+	
+	elif runLocation == 'abe':
+		if runType == 'wallTimeEstimate':
+			settings['nodes'] = 1
+			settings['ppn'] = 1
+			settings['repspp'] = 1
+			settings['qSubCommand'] = settings['qSubCommand'] + 'debug '
+			settings['interactive'] = 0
+			settings['server'] = 'wallTimeEstimate'
+			
+		elif runType == 'batch':
+			if nodes == 'default': settings['nodes'] = 1
+			else: settings['nodes'] = nodes
+			if ppn == 'default': settings['ppn']=8
+			else: settings['ppn'] = ppn
+			settings['qSubCommand'] = settings['qSubCommand'] + 'normal '
+			settings['interactive'] = 0
+			settings['server'] = 'normal'
+	
+	# elif runLocation == 'steele':
+		# if runType == 'wallTimeEstimate':
+			# if nodes == 'default': settings['nodes'] = 600
+			# else: settings['nodes'] = nodes
+			# if ppn == 'default': settings['ppn']=8
+			# else: settings['ppn'] = ppn
+			# settings['qSubCommand'] = settings['qSubCommand'] + 'long '
+			# settings['interactive'] = 0
+			# settings['server'] = 'long'
+			
+		# elif runType == 'batch':
+			# if nodes == 'default': settings['nodes'] = 600
+			# else: settings['nodes'] = nodes
+			# if ppn == 'default': settings['ppn']=8
+			# else: settings['ppn'] = ppn
+			# settings['qSubCommand'] = settings['qSubCommand'] + 'long '
+			# settings['interactive'] = 0
+			# settings['server'] = 'long'
+	
 	else:
 		print 'Invalid Teragrid server type: ',server,'; exiting...'
 		import sys
@@ -97,23 +118,32 @@ def runPBS(commandString, fileList = (), wallTime = 30*60, nodes = 'default', pp
 		print 'Dryrunning; Command to be called: ' + os.path.join(settings['hiddenDir'],settings['qSubFileName'])
 		userInput = raw_input("  Press <return> to continue...")
 	else:
-		if localRun == 1:
+		if runLocation == 'local':
 			print 'Local run mode selected.'
 			userInput = raw_input("  Press <return> to continue...")
 			
-			if settings['server'] == 'wallTimeEstimate':
+			if settings['runType'] == 'wallTimeEstimate':
 				os.chdir(os.path.join(settings['hiddenDir'], settings['jobHandle'] + '_1_' + str(settings['repspp'])))
 				call('python wallTimeEst.py',shell=True)
 				os.chdir(settings['cwd'])
-			else:
+			elif settings['runType'] == 'batch':
 				for i in range(1,settings['nodes']*settings['ppn']*settings['repspp']+1):
 					call(os.path.join(settings['hiddenDir'], settings['jobHandle'] + '_' + str(i),settings['slaveFileNamePrefix'] + str(i) + '.csh'),shell=True)
+			else:
+				print 'Invalid runType : ',runType,'; exiting...'
+				import sys
+				sys.exit()
 			
-		else:		
+		elif runLocation == 'steele' or runLocation == 'abe':
 			os.system(os.path.join(settings['hiddenDir'],settings['qSubFileName']))
 			
 			if settings['interactive'] == 0:
 				waitForJobs(settings)
+		else:
+			print 'Invalid runLocation : ',runLocation,'; exiting...'
+			import sys
+			sys.exit()
+
 		
 		print '  Collecting results:'
 		collectJobs(settings)
@@ -122,7 +152,7 @@ def runPBS(commandString, fileList = (), wallTime = 30*60, nodes = 'default', pp
 		nukeDirs(settings['hiddenDir'])
 				
 		# Either local or not, if we did a wallTimeEst, display results:
-		if settings['server'] == 'wallTimeEstimate':
+		if settings['runType'] == 'wallTimeEstimate':
 			print "********************************"
 			print "* Wall-Time Estimate, each Processor:"
 			print "********************************"
@@ -175,7 +205,7 @@ def displaySettings(settings, continuePrompt = 1):
 	print "********************************"
 	if settings['dryRun'] == 1:
 		print " Teragrid PBS job ready to run: DRYRUN!"
-	elif settings['localRun'] == 1:
+	elif settings['runType'] == 'localRun':
 		print " Teragrid PBS job ready to run: LOCAL RUN!"
 	else:
 		print " Teragrid PBS job ready to run:"	
@@ -303,7 +333,7 @@ def createJobDirs(settings):
 	os.mkdir(os.path.join(settings['hiddenDir'], settings['PBSDir']))
 	
 	# Run a loop to create subordinate run directories:
-	if settings['server'] == 'wallTimeEstimate':
+	if settings['runType'] == 'wallTimeEstimate':
 		os.mkdir(os.path.join(settings['hiddenDir'], settings['jobHandle'] + '_1_' + str(settings['repspp'])))
 	else:
 		for i in range(1,settings['nodes']*settings['ppn']*settings['repspp']+1):
@@ -338,7 +368,7 @@ def makeSubmissionFiles(settings):
 		currentNoder.write('set NP=`wc -l $PBS_NODEFILE | cut -d\'/\' -f1`' + '\n')
 		currentNoder.write('set JOBID=`echo $PBS_JOBID | cut -d\'.\' -f1`' + '\n')
 		for j in range(1,settings['ppn']+1):
-			if settings['server']=='wallTimeEstimate':
+			if settings['runType'] == 'wallTimeEstimate':
 				counter=counter+1
 				currentNoder.write('cd ' + os.path.join(settings['hiddenDir'], settings['jobHandle'] + '_1_' + str(settings['repspp'])) + '\n')
 				currentNoder.write('python wallTimeEst.py & \n')
@@ -351,7 +381,7 @@ def makeSubmissionFiles(settings):
 		os.system('chmod +x ' + currentPBSFileName)
 	
 	# In wallTimeEstimate mode, write wallTimeEst.py file:
-	if settings['server']=='wallTimeEstimate':
+	if settings['runType'] == 'wallTimeEstimate':
 		currentFileName = os.path.join(settings['hiddenDir'], settings['jobHandle'] + '_1_' + str(settings['repspp']),'wallTimeEst.py')
 		currentFile=open(currentFileName, 'w')
 
@@ -370,13 +400,13 @@ def makeSubmissionFiles(settings):
 		currentFile.close()
 		
 	# Write slave_#.csh files
-	if settings['server']=='wallTimeEstimate':
+	if settings['runType'] == 'wallTimeEstimate':
 		iterMax=1
 	else:
 		iterMax=settings['nodes']*settings['ppn']*settings['repspp']
 			
 	for i in range(1,iterMax+1):
-		if settings['server']=='wallTimeEstimate':
+		if settings['runType'] == 'wallTimeEstimate':
 			currentSlaveDir = os.path.join(settings['hiddenDir'], settings['jobHandle'] + '_1_' + str(settings['repspp']))
 		else:
 			currentSlaveDir = os.path.join(settings['hiddenDir'], settings['jobHandle'] + '_' + str(i))
@@ -404,7 +434,7 @@ def copyFiles(settings):
 			sourceDir = settings['buildDir']
 		else:
 			sourceDir = currDir
-		if settings['server']=='wallTimeEstimate':
+		if settings['runType'] == 'wallTimeEstimate':
 			os.symlink(os.path.join(sourceDir,file),os.path.join(settings['hiddenDir'], settings['jobHandle'] + '_1_' + str(settings['repspp']),currFile))
 		else:
 			for i in range(1,settings['nodes']*settings['ppn']*settings['repspp']+1):
