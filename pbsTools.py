@@ -59,9 +59,9 @@ def runPBS(commandString, fileList = (), runLocation = 'local', runType = 'wallT
 		else: settings['ppn'] = ppn
 		if repspp == 'default': settings['repspp']=1
 		else: settings['repspp'] = repspp
-		settings['qSubCommand'] = 'null'
+		settings['qSubCommand'] = 'local'
 		settings['interactive'] = 0
-		settings['server'] = 'null'
+		settings['server'] = 'local'
 	
 	elif runLocation == 'abe':
 		if runType == 'wallTimeEstimate':
@@ -202,14 +202,18 @@ def nukeDirs(deleteDir):
 def displaySettings(settings, continuePrompt = 1):
 	import os
 
-	print "********************************"
-	if settings['dryRun'] == 1:
-		print " Teragrid PBS job ready to run: DRYRUN!"
-	elif settings['runLocation'] == 'localRun':
-		print " Teragrid PBS job ready to run: LOCAL RUN!"
-	else:
-		print " Teragrid PBS job ready to run:"	
-	print "********************************"
+	# Create a special settings banner:
+	banner = ''
+	if settings['dryRun'] == 1: 
+		banner = banner + 'DRYRUN '
+	if settings['runLocation'] == 'localRun': 
+		banner = banner + 'LOCAL RUN '
+	if settings['runType'] == 'wallTimeEstimate': 
+		banner = banner + 'WALLTIMEESTIMATE '
+
+	print "****************************************************************"
+	print " Teragrid PBS job ready to run: " + banner	
+	print "****************************************************************"
 	print " "
 	print "Job Details:"
 	print "  Server: " + settings['server']
