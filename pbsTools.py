@@ -87,7 +87,7 @@ def runPBS(commandString, fileList = (), runLocation = 'local', runType = 'wallT
 			settings['nodes'] = 1
 			settings['ppn'] = 1
 			settings['repspp'] = 1
-			settings['qSubCommand'] = settings['qSubCommand'] + 'tg_short '
+			settings['qSubCommand'] = settings['qSubCommand'] + 'tg_workq '
 			settings['interactive'] = 0
 			settings['server'] = 'wallTimeEstimate'
 			settings['wallTime'] = 30*60
