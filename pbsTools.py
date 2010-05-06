@@ -273,9 +273,14 @@ def compileJob(settings):
 def waitForJobs(settings):
 
 	import time, os
+	import progressMeter as pm
+	
 	breakout=0
+	maxJobs = settings['nodes']*settings['ppn']*settings['repspp']
+	p = pm.ProgressMeter(total=maxJobs)
+	
 	while breakout !=1:
-		time.sleep(10)
+		time.sleep(2)
 		checkForCompletion=os.popen('qstat -u ' + settings['user'] + ' | wc -l')
 		numberOfLines=int(checkForCompletion.read())
 		checkForCompletion.close()
@@ -286,11 +291,15 @@ def waitForJobs(settings):
 			for currDir in dirs:
 				if os.path.isfile(os.path.join(root,currDir,'jobCompleted')):
 					numberCompleted += 1
-				
-		if numberOfLines == 0:
+					p.update(1)
+
+		if numberCompleted == maxJobs:
 			breakout = 1
-		else:
-			print str(numberOfLines - 5) + " jobs remain. (" + str(numberCompleted) + '_' + str(settings['nodes']*settings['ppn']*settings['repspp']) + ")"
+
+	return
+
+#		else:
+#			print ' ' + str(numberOfLines - 5) + " jobs remain. (" + str(numberCompleted) + '_' + str() + ")"
 
 ################################################################################
 # This function creates a sequence of job directories for the pbs script:
