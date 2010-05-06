@@ -280,7 +280,7 @@ def waitForJobs(settings):
 	p = pm.ProgressMeter(total=maxJobs+1)
 	p.update(1)
 	
-	totalNumberCompleted = 0
+	numberCompleted = 0
 	while breakout !=1:
 		time.sleep(2)
 		checkForCompletion=os.popen('qstat -u ' + settings['user'] + ' | wc -l')
