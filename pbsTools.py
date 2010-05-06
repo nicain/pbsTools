@@ -280,6 +280,7 @@ def waitForJobs(settings):
 	p = pm.ProgressMeter(total=maxJobs+1)
 	p.update(1)
 	
+	totalNumberCompleted = 0
 	while breakout !=1:
 		time.sleep(2)
 		checkForCompletion=os.popen('qstat -u ' + settings['user'] + ' | wc -l')
@@ -287,11 +288,14 @@ def waitForJobs(settings):
 		checkForCompletion.close()
 		
 		# Check each job directory for the standard out file:
-		numberCompletedThisRound = 0
+		oldNumberCompleted = numberCompleted
+		numberCompleted = 0
 		for root, dirs, files in os.walk(settings['hiddenDir']):
 			for currDir in dirs:
 				if os.path.isfile(os.path.join(root,currDir,'jobCompleted')):
 					numberCompleted += 1
+		
+		numberCompletedThisRound = numberCompleted - oldNumberCompleted
 		if numberCompletedThisRound > 0:
 				p.update(numberCompletedThisRound)
 
