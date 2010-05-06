@@ -287,12 +287,13 @@ def waitForJobs(settings):
 		checkForCompletion.close()
 		
 		# Check each job directory for the standard out file:
-		numberCompleted = 0
+		numberCompletedThisRound = 0
 		for root, dirs, files in os.walk(settings['hiddenDir']):
 			for currDir in dirs:
 				if os.path.isfile(os.path.join(root,currDir,'jobCompleted')):
 					numberCompleted += 1
-					p.update(1)
+		if numberCompletedThisRound > 0:
+				p.update(numberCompletedThisRound)
 
 		if numberCompleted == maxJobs:
 			breakout = 1
