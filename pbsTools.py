@@ -277,7 +277,8 @@ def waitForJobs(settings):
 	
 	breakout=0
 	maxJobs = settings['nodes']*settings['ppn']*settings['repspp']
-	p = pm.ProgressMeter(total=maxJobs)
+	p = pm.ProgressMeter(total=maxJobs+1)
+	p.update(1)
 	
 	while breakout !=1:
 		time.sleep(2)
