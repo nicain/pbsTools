@@ -426,7 +426,7 @@ def makeSubmissionFiles(settings):
 		currentFile.write('myMean = pt.mean(totalTime)\n')
 		currentFile.write('myStddev = pt.stddev(totalTime)\n')
 		currentFile.write('f = open(\'wallTimeEstData.dat\', \'w\')\n')
-		currentFile.write('print >> f, \"Mean: \", mean\n')
+		currentFile.write('print >> f, \"Mean: \", myMean\n')
 		currentFile.write('print >> f, \"Standard Deviation: \", myStddev\n')
 		currentFile.write('print >> f, \"Suggested wallTime: \", myMean+4*myStddev\n')
 		currentFile.write('f.close\n')
