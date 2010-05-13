@@ -418,17 +418,17 @@ def makeSubmissionFiles(settings):
 		currentFileName = os.path.join(settings['hiddenDir'], settings['jobHandle'] + '_1_' + str(settings['repspp']),'wallTimeEst.py')
 		currentFile=open(currentFileName, 'w')
 
-		currentFile.write('import timeit, numpy\n')
+		currentFile.write('import timeit, math\n')
 		currentFile.write('numberOfTrials=' + str(settings['wallTimeEstCount']) + '\n')
 		currentFile.write('repspp=' + str(settings['repspp']) + '\n')
 		currentFile.write('totalTimeList=timeit.Timer(\'os.system(\"' + os.path.join(settings['hiddenDir'], settings['jobHandle'] + '_1_' + str(settings['repspp']), settings['slaveFileNamePrefix'] + str(1) + '.csh') + '\")\',\'import os\').repeat(*[numberOfTrials,repspp])\n')
-		currentFile.write('totalTime = numpy.array(totalTimeList)\n')
-		currentFile.write('mean = totalTime.mean()\n')
-		currentFile.write('stddev = totalTime.std()\n')
+		currentFile.write('totalTime = [0]*totalTimeList\n')
+		currentFile.write('myMean = mean(totalTime)\n')
+		currentFile.write('myStddev = stddev(totalTime)\n')
 		currentFile.write('f = open(\'wallTimeEstData.dat\', \'w\')\n')
 		currentFile.write('print >> f, \"Mean: \", mean\n')
-		currentFile.write('print >> f, \"Standard Deviation: \", stddev\n')
-		currentFile.write('print >> f, \"Suggested wallTime: \", mean+4*stddev\n')
+		currentFile.write('print >> f, \"Standard Deviation: \", myStddev\n')
+		currentFile.write('print >> f, \"Suggested wallTime: \", myMean+4*myStddev\n')
 		currentFile.write('f.close\n')
 		currentFile.write('\n')
 		currentFile.write('from subprocess import call as call\n')
@@ -570,3 +570,15 @@ def getFromPickleJar(loadDir = 'simResults', fileNameSubString = 'simResults.dat
 		counter += 1
 	
 	return resultList
+	
+################################################################################
+# For wall time est use:
+def mean(values):
+    """Return the arithmetic average of the values."""
+    return sum(values) / float(len(values))
+
+def stddev(values, meanval=None):
+    """The standard deviation of a set of values.
+    Pass in the mean if you already know it."""
+    if meanval == None: meanval = mean(values)
+    return math.sqrt(sum([(x - meanval)**2 for x in values]) / (len(values)-1))
