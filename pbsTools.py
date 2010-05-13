@@ -574,13 +574,13 @@ def getFromPickleJar(loadDir = 'simResults', fileNameSubString = 'simResults.dat
 ################################################################################
 # For wall time est use:
 def mean(values):
-    """Return the arithmetic average of the values."""
-    return sum(values) / float(len(values))
+	"""Return the arithmetic average of the values."""
+	return sum(values) / float(len(values))
 
 def stddev(values, meanval=None):
-    """The standard deviation of a set of values.
-    Pass in the mean if you already know it."""
+	"""The standard deviation of a set of values.
+	Pass in the mean if you already know it."""
 	import math
 	
-    if meanval == None: meanval = mean(values)
-    return math.sqrt(sum([(x - meanval)**2 for x in values]) / (len(values)-1))
+	if meanval == None: meanval = mean(values)
+	return math.sqrt(sum([(x - meanval)**2 for x in values]) / (len(values)-1))
