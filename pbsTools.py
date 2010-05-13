@@ -418,7 +418,7 @@ def makeSubmissionFiles(settings):
 		currentFileName = os.path.join(settings['hiddenDir'], settings['jobHandle'] + '_1_' + str(settings['repspp']),'wallTimeEst.py')
 		currentFile=open(currentFileName, 'w')
 
-		currentFile.write('import timeit, math\n')
+		currentFile.write('import timeit\n')
 		currentFile.write('import pbsTools as pt\n')
 		currentFile.write('numberOfTrials=' + str(settings['wallTimeEstCount']) + '\n')
 		currentFile.write('repspp=' + str(settings['repspp']) + '\n')
@@ -580,5 +580,7 @@ def mean(values):
 def stddev(values, meanval=None):
     """The standard deviation of a set of values.
     Pass in the mean if you already know it."""
+	import math
+	
     if meanval == None: meanval = mean(values)
     return math.sqrt(sum([(x - meanval)**2 for x in values]) / (len(values)-1))
