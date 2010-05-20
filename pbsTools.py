@@ -4,7 +4,24 @@
 #
 ################################################################################
 # This function runs all of the subordinate functions in concert:
-def runPBS(commandString, fileList = (), runLocation = 'local', runType = 'wallTimeEstimate', wallTime = 30*60, nodes = 'default', ppn = 'default',repspp = 'default', buildDir = './', hiddenDir = './.submitDir', jobHandle = 'currJob', server = 'normal', outputDir = 'simResults', compiler = 'None', user = 'ncain', wallTimeEstCount = 20, includeIDAsArg = 0, dryRun = 1):
+def runPBS(
+	commandString, 
+	includeIDAsArg = 0, 
+	fileList = (), 
+	callMake = 0, 
+	dryRun = 1
+	runLocation = 'local', 
+	runType = 'wallTimeEstimate', 
+	wallTime = 30*60, 
+	wallTimeEstCount = 5, 
+	buildDir = './', 
+	hiddenDir = './.submitDir', 
+	outputDir = 'simResults', 
+	nodes = 'default', 
+	ppn = 'default', 
+	repspp = 'default',			# Probably never change
+	jobHandle = 'currJob',		# Probably never change
+	):
 
 	##### Option for runLocation ######
 	# local (default)
@@ -20,9 +37,8 @@ def runPBS(commandString, fileList = (), runLocation = 'local', runType = 'wallT
 
 	# Check to make sure fileList is in fact a list:
 	if not isinstance(fileList,(list,tuple)):
-		print('  fileList is not a list! exiting...')
-		import sys
-		sys.exit()
+		print('  fileList is not a list! Making it a list with one element...')
+		fileList = (fileList,)
 
 	# Create dictionary of all settings:
 	settings = {}
@@ -36,7 +52,6 @@ def runPBS(commandString, fileList = (), runLocation = 'local', runType = 'wallT
 	settings['dryRun'] = dryRun
 	settings['runLocation'] = runLocation
 	settings['runType'] = runType
-	settings['user'] = user
 	settings['fileList'] = fileList
 	settings['buildDir'] = os.path.abspath(os.path.expanduser(buildDir))
 	settings['outputDir'] = os.path.abspath(os.path.expanduser(outputDir))
@@ -53,15 +68,25 @@ def runPBS(commandString, fileList = (), runLocation = 'local', runType = 'wallT
 	settings['qSubCommand'] = 'qsub -S /bin/tcsh -q '
 	
 	if runLocation == 'local':
-		if nodes == 'default': settings['nodes'] = 1
-		else: settings['nodes'] = nodes
-		if ppn == 'default': settings['ppn']=1
-		else: settings['ppn'] = ppn
-		if repspp == 'default': settings['repspp']=1
-		else: settings['repspp'] = repspp
-		settings['qSubCommand'] = 'local'
-		settings['interactive'] = 0
-		settings['server'] = 'local'
+		if runType == 'wallTimeEstimate':
+			settings['nodes'] = 1
+			settings['ppn'] = 1
+			settings['repspp'] = 1
+			settings['qSubCommand'] = settings['qSubCommand'] + 'LOCAL WALLTIMEEST '
+			settings['interactive'] = 0
+			settings['server'] = 'LOCAL WALLTIMEEST'
+			settings['wallTime'] = 30*60
+			
+		elif runType == 'batch':
+			if nodes == 'default': settings['nodes'] = 1
+			else: settings['nodes'] = nodes
+			if ppn == 'default': settings['ppn']=1
+			else: settings['ppn'] = ppn
+			if repspp == 'default': settings['repspp']=1
+			else: settings['repspp'] = repspp
+			settings['qSubCommand'] = 'LOCAL BATCH'
+			settings['interactive'] = 0
+			settings['server'] = 'LOCAL BATCH'
 	
 	elif runLocation == 'abe':
 		if runType == 'wallTimeEstimate':
@@ -104,14 +129,16 @@ def runPBS(commandString, fileList = (), runLocation = 'local', runType = 'wallT
 
 	
 	else:
-		print 'Invalid Teragrid server type: ',server,'; exiting...'
+		print 'Invalid Teragrid server type: ',runLocation,'; exiting...'
 		import sys
 		sys.exit()
 
 	displaySettings(settings, continuePrompt = 1)
 
-	if compiler != 'None':
-		compileJob(settings)
+	if callMake == 1:
+		os.chdir(settings['buildDir'])
+		call('make',shell=true)
+		os.chdir(settings['cwd'])
 		
 	createJobDirs(settings)
 	makeSubmissionFiles(settings)
@@ -254,21 +281,6 @@ def displaySettings(settings, continuePrompt = 1):
 	return 0
 
 ################################################################################
-# This function compiles the job executible using a makeFile:
-def compileJob(settings):
-	from os import system as systemCall
-	from os import chdir
-	from os.path import join as join
-	from os.path import abspath as abspath
-	
-	print '  ' + 'Making directory: ' + settings['buildDir']
-	chdir(abspath(settings['buildDir']))
-	systemCall('make '+settings['compiler'])
-	chdir(abspath(settings['cwd']))
-
-	return 0
-
-################################################################################
 # This function pauses the script until all teragrid jobs are done:
 def waitForJobs(settings):
 
@@ -283,9 +295,6 @@ def waitForJobs(settings):
 	numberCompleted = 0
 	while breakout !=1:
 		time.sleep(2)
-		checkForCompletion=os.popen('qstat -u ' + settings['user'] + ' | wc -l')
-		numberOfLines=int(checkForCompletion.read())
-		checkForCompletion.close()
 		
 		# Check each job directory for the standard out file:
 		oldNumberCompleted = numberCompleted
@@ -303,9 +312,6 @@ def waitForJobs(settings):
 			breakout = 1
 
 	return
-
-#		else:
-#			print ' ' + str(numberOfLines - 5) + " jobs remain. (" + str(numberCompleted) + '_' + str() + ")"
 
 ################################################################################
 # This function creates a sequence of job directories for the pbs script:
@@ -546,7 +552,7 @@ def pickle(myVars, saveFileName = 'simResults.dat'):
 def unpickle(saveFileName = 'simResults.dat'):
 	import pickle as pickleModule
 	
-	fIn = open(saveFileName,'r')
+	   = open(saveFileName,'r')
 	myPickle = pickleModule.load(fIn)
 	fIn.close()	
 	return myPickle
