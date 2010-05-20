@@ -9,7 +9,7 @@ def runPBS(
 	includeIDAsArg = 0, 
 	fileList = (), 
 	callMake = 0, 
-	dryRun = 1
+	dryRun = 1,
 	runLocation = 'local', 
 	runType = 'wallTimeEstimate', 
 	wallTime = 30*60, 
@@ -20,8 +20,7 @@ def runPBS(
 	nodes = 'default', 
 	ppn = 'default', 
 	repspp = 'default',			# Probably never change
-	jobHandle = 'currJob',		# Probably never change
-	):
+	jobHandle = 'currJob'):		# Probably never change
 
 	##### Option for runLocation ######
 	# local (default)
@@ -36,6 +35,7 @@ def runPBS(
 	from subprocess import call as call
 
 	# Check to make sure fileList is in fact a list:
+	print fileList
 	if not isinstance(fileList,(list,tuple)):
 		print('  fileList is not a list! Making it a list with one element...')
 		fileList = (fileList,)
@@ -58,7 +58,7 @@ def runPBS(
 	settings['hiddenDir'] = os.path.abspath(os.path.expanduser(hiddenDir))
 	settings['commandString'] = commandString
 	settings['jobHandle'] = jobHandle
-	settings['compiler'] = compiler
+	settings['callMake'] = callMake
 	settings['wallTime'] = wallTime
 	settings['cwd'] = os.getcwd()
 	settings['wallTimeEstCount'] = wallTimeEstCount
@@ -248,7 +248,7 @@ def displaySettings(settings, continuePrompt = 1):
 	print "Job Details:"
 	print "  Server: " + settings['server']
 	print "  Job Name: " + settings['jobHandle']
-	print "  Compiler: " + settings['compiler']
+	print "  Compile with make: " + str(settings['callMake'])
 	print "  Walltime (seconds): " + str(settings['wallTime'])
 	print "  Nodes: " + str(settings['nodes'])
 	print "  Processors Per Node (PPN): " + str(settings['ppn'])
@@ -268,7 +268,6 @@ def displaySettings(settings, continuePrompt = 1):
 	print "  Files used: "
 	for i in range(len(settings['fileList'])):
 		print "    " + settings['fileList'][i]
-	print "  Compiler: " + settings['compiler']
 	print "  Total Sims: " + str(settings['nodes']*settings['ppn']*settings['repspp'])
 	
 	
@@ -476,6 +475,8 @@ def copyFiles(settings):
 		(currDir, currFile) = os.path.split(file)
 		if currDir == '':
 			sourceDir = settings['buildDir']
+		elif currDir == '.':
+			sourceDir = settings['cwd']
 		else:
 			sourceDir = currDir
 		if settings['runType'] == 'wallTimeEstimate':
@@ -552,7 +553,7 @@ def pickle(myVars, saveFileName = 'simResults.dat'):
 def unpickle(saveFileName = 'simResults.dat'):
 	import pickle as pickleModule
 	
-	   = open(saveFileName,'r')
+	fIn = open(saveFileName,'r')
 	myPickle = pickleModule.load(fIn)
 	fIn.close()	
 	return myPickle
