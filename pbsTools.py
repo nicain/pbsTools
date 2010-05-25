@@ -94,6 +94,7 @@ def runPBS(
 			settings['ppn'] = 1
 			settings['repspp'] = 1
 			if queue == 'default': settings['queue'] = 'debug'
+			else: settings['queue'] = queue
 			settings['qSubCommand'] = settings['qSubCommand'] + settings['queue'] + ' '
 			settings['interactive'] = 0
 			settings['server'] = 'wallTimeEstimate'
@@ -107,6 +108,7 @@ def runPBS(
 			if repspp == 'default': settings['repspp']=1
 			else: settings['repspp'] = repspp
 			if queue == 'default': settings['queue'] = 'normal'
+			else: settings['queue'] = queue
 			settings['qSubCommand'] = settings['qSubCommand'] + settings['queue'] + ' '
 			settings['interactive'] = 0
 			settings['server'] = 'normal'
@@ -117,6 +119,7 @@ def runPBS(
 			settings['ppn'] = 1
 			settings['repspp'] = 1
 			if queue == 'default': settings['queue'] = 'tg_workq'
+			else: settings['queue'] = queue
 			settings['qSubCommand'] = settings['qSubCommand'] + settings['queue'] + ' '
 			settings['interactive'] = 0
 			settings['server'] = 'wallTimeEstimate'
@@ -130,6 +133,7 @@ def runPBS(
 			if repspp == 'default': settings['repspp']=1
 			else: settings['repspp'] = repspp
 			if queue == 'default': settings['queue'] = 'tg_workq'
+			else: settings['queue'] = queue
 			settings['qSubCommand'] = settings['qSubCommand'] + settings['queue'] + ' '
 			settings['interactive'] = 0
 			settings['server'] = 'normal'
