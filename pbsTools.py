@@ -17,6 +17,7 @@ def runPBS(
 	buildDir = './', 
 	hiddenDir = './.submitDir', 
 	outputDir = 'simResults', 
+	queue = 'default',
 	nodes = 'default', 
 	ppn = 'default', 
 	repspp = 'default',			# Probably never change
@@ -49,24 +50,23 @@ def runPBS(
 	settings['PBSDir'] = 'PBSTemp'					# Probably never need to change
 	settings['SlaveDir'] = 'SlaveTemp'				# Probably never need to change
 
+	settings['commandString'] = commandString
+	settings['includeIDAsArg'] = includeIDAsArg
+	settings['fileList'] = fileList
+	settings['callMake'] = callMake	
 	settings['dryRun'] = dryRun
 	settings['runLocation'] = runLocation
 	settings['runType'] = runType
-	settings['fileList'] = fileList
-	settings['buildDir'] = os.path.abspath(os.path.expanduser(buildDir))
-	settings['outputDir'] = os.path.abspath(os.path.expanduser(outputDir))
-	settings['hiddenDir'] = os.path.abspath(os.path.expanduser(hiddenDir))
-	settings['commandString'] = commandString
-	settings['jobHandle'] = jobHandle
-	settings['callMake'] = callMake
 	settings['wallTime'] = wallTime
-	settings['cwd'] = os.getcwd()
 	settings['wallTimeEstCount'] = wallTimeEstCount
-	settings['repspp'] = repspp
-	settings['includeIDAsArg'] = includeIDAsArg
-	
+	settings['buildDir'] = os.path.abspath(os.path.expanduser(buildDir))
+	settings['hiddenDir'] = os.path.abspath(os.path.expanduser(hiddenDir))
+	settings['outputDir'] = os.path.abspath(os.path.expanduser(outputDir))
+	settings['jobHandle'] = jobHandle
+
+	settings['cwd'] = os.getcwd()
 	settings['qSubCommand'] = 'qsub -S /bin/tcsh -q '
-	
+
 	if runLocation == 'local':
 		if runType == 'wallTimeEstimate':
 			settings['nodes'] = 1
@@ -93,7 +93,8 @@ def runPBS(
 			settings['nodes'] = 1
 			settings['ppn'] = 1
 			settings['repspp'] = 1
-			settings['qSubCommand'] = settings['qSubCommand'] + 'debug '
+			if queue == 'default': settings['queue'] = 'debug'
+			settings['qSubCommand'] = settings['qSubCommand'] + settings['queue'] + ' '
 			settings['interactive'] = 0
 			settings['server'] = 'wallTimeEstimate'
 			settings['wallTime'] = 30*60
@@ -103,7 +104,10 @@ def runPBS(
 			else: settings['nodes'] = nodes
 			if ppn == 'default': settings['ppn']=8
 			else: settings['ppn'] = ppn
-			settings['qSubCommand'] = settings['qSubCommand'] + 'normal '
+			if repspp == 'default': settings['repspp']=1
+			else: settings['repspp'] = repspp
+			if queue == 'default': settings['queue'] = 'normal'
+			settings['qSubCommand'] = settings['qSubCommand'] + settings['queue'] + ' '
 			settings['interactive'] = 0
 			settings['server'] = 'normal'
 			
@@ -112,7 +116,8 @@ def runPBS(
 			settings['nodes'] = 1
 			settings['ppn'] = 1
 			settings['repspp'] = 1
-			settings['qSubCommand'] = settings['qSubCommand'] + 'tg_workq '
+			if queue == 'default': settings['queue'] = 'tg_workq'
+			settings['qSubCommand'] = settings['qSubCommand'] + settings['queue'] + ' '
 			settings['interactive'] = 0
 			settings['server'] = 'wallTimeEstimate'
 			settings['wallTime'] = 30*60
@@ -122,7 +127,10 @@ def runPBS(
 			else: settings['nodes'] = nodes
 			if ppn == 'default': settings['ppn']=8
 			else: settings['ppn'] = ppn
-			settings['qSubCommand'] = settings['qSubCommand'] + 'tg_workq '
+			if repspp == 'default': settings['repspp']=1
+			else: settings['repspp'] = repspp
+			if queue == 'default': settings['queue'] = 'tg_workq'
+			settings['qSubCommand'] = settings['qSubCommand'] + settings['queue'] + ' '
 			settings['interactive'] = 0
 			settings['server'] = 'normal'
 	
