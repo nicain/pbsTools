@@ -610,14 +610,15 @@ def brokenJobRecovery(buildDir = './', hiddenDir = './.submitDir', outputDir = '
 	import os
 
 	# Create Settings Dictionary; start with imports:
-	settings['buildDir'] = buildDir
-	settings['hiddenDir'] = hiddenDir
-	settings['outputDir'] = outputDir
+	settings = {}
+	settings['buildDir'] = os.path.abspath(os.path.expanduser(buildDir))
+	settings['hiddenDir'] = os.path.abspath(os.path.expanduser(hiddenDir))
+	settings['outputDir'] = os.path.abspath(os.path.expanduser(outputDir))
 	settings['jobHandle'] = jobHandle
 	
 	
 	# Definitions, should be same as in runPBS:
-	settings['cwd'] = os.getcwd()
+	settings['cwd'] = os.path.abspath(os.path.expanduser(os.getcwd()))
 	settings['qSubFileName'] = 'qsubber.csh'
 	settings['PBSDir'] = 'PBSTemp'
 	settings['jobHandle'] = jobHandle
