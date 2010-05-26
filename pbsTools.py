@@ -603,3 +603,36 @@ def stddev(values, meanval=None):
 	
 	if meanval == None: meanval = mean(values)
 	return math.sqrt(sum([(x - meanval)**2 for x in values]) / (len(values)-1))
+
+################################################################################
+# In case of a broken job, to recover to a directory:
+def brokenJobRecovery(buildDir = './', hiddenDir = './.submitDir', outputDir = 'simResults', jobHandle = 'currJob'):
+	import os
+
+	# Create Settings Dictionary; start with imports:
+	settings['buildDir'] = buildDir
+	settings['hiddenDir'] = hiddenDir
+	settings['outputDir'] = outputDir
+	settings['jobHandle'] = jobHandle
+	
+	
+	# Definitions, should be same as in runPBS:
+	settings['cwd'] = os.getcwd()
+	settings['qSubFileName'] = 'qsubber.csh'
+	settings['PBSDir'] = 'PBSTemp'
+	settings['jobHandle'] = jobHandle
+	settings['PBSFileNamePrefix'] = 'currentNode_'
+	
+	# Recover the job:
+	print '  Collecting results:'
+	collectJobs(settings)
+
+	print '  Deleting temporary files:'
+	nukeDirs(settings['hiddenDir'])
+	
+	return
+	
+
+
+		
+	
