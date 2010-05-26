@@ -305,7 +305,7 @@ def waitForJobs(settings):
 	
 	numberCompleted = 0
 	while breakout !=1:
-		time.sleep(2)
+		time.sleep(20)
 		
 		# Check each job directory for the standard out file:
 		oldNumberCompleted = numberCompleted
