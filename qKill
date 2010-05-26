@@ -1,0 +1,14 @@
+#!/usr/bin/env python
+
+import os, sys
+from subprocess import *
+
+output = Popen(["qstat", "-u cainn"], stdout=PIPE).communicate()[0]
+
+allLines = output.split('\n')
+for line in allLines:
+    if 'cainn' in line:
+        chunk = line.split('.')
+        currJob = chunk[0]
+        print 'Killing job: ' + currJob
+        call('qdel ' + currJob,shell=True)
