@@ -149,7 +149,7 @@ def runPBS(
 
 	if callMake == 1:
 		os.chdir(settings['buildDir'])
-		call('make',shell=true)
+		call('make',shell=True)
 		os.chdir(settings['cwd'])
 		
 	createJobDirs(settings)
