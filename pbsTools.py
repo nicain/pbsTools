@@ -11,7 +11,8 @@ def runPBS(
 	callMake = 0, 
 	dryRun = 1,
 	runLocation = 'local', 
-	runType = 'wallTimeEstimate', 
+	runType = 'wallTimeEstimate',
+	waitForSims = 1,
 	wallTime = 30*60, 
 	wallTimeEstCount = 5, 
 	buildDir = './', 
@@ -57,6 +58,7 @@ def runPBS(
 	settings['dryRun'] = dryRun
 	settings['runLocation'] = runLocation
 	settings['runType'] = runType
+	settings['waitForSims'] = waitForSims
 	settings['wallTime'] = wallTime
 	settings['wallTimeEstCount'] = wallTimeEstCount
 	settings['buildDir'] = os.path.abspath(os.path.expanduser(buildDir))
@@ -73,7 +75,6 @@ def runPBS(
 			settings['ppn'] = 1
 			settings['repspp'] = 1
 			settings['qSubCommand'] = settings['qSubCommand'] + 'LOCAL WALLTIMEEST '
-			settings['interactive'] = 0
 			settings['server'] = 'LOCAL WALLTIMEEST'
 			settings['wallTime'] = 30*60
 			
@@ -85,7 +86,6 @@ def runPBS(
 			if repspp == 'default': settings['repspp']=1
 			else: settings['repspp'] = repspp
 			settings['qSubCommand'] = 'LOCAL BATCH'
-			settings['interactive'] = 0
 			settings['server'] = 'LOCAL BATCH'
 	
 	elif runLocation == 'abe':
@@ -96,7 +96,6 @@ def runPBS(
 			if queue == 'default': settings['queue'] = 'debug'
 			else: settings['queue'] = queue
 			settings['qSubCommand'] = settings['qSubCommand'] + settings['queue'] + ' '
-			settings['interactive'] = 0
 			settings['server'] = 'wallTimeEstimate'
 			settings['wallTime'] = 30*60
 			
@@ -110,7 +109,6 @@ def runPBS(
 			if queue == 'default': settings['queue'] = 'normal'
 			else: settings['queue'] = queue
 			settings['qSubCommand'] = settings['qSubCommand'] + settings['queue'] + ' '
-			settings['interactive'] = 0
 			settings['server'] = 'normal'
 			
 	elif runLocation == 'steele':
@@ -121,7 +119,6 @@ def runPBS(
 			if queue == 'default': settings['queue'] = 'tg_workq'
 			else: settings['queue'] = queue
 			settings['qSubCommand'] = settings['qSubCommand'] + settings['queue'] + ' '
-			settings['interactive'] = 0
 			settings['server'] = 'wallTimeEstimate'
 			settings['wallTime'] = 30*60
 			
@@ -135,10 +132,7 @@ def runPBS(
 			if queue == 'default': settings['queue'] = 'tg_workq'
 			else: settings['queue'] = queue
 			settings['qSubCommand'] = settings['qSubCommand'] + settings['queue'] + ' '
-			settings['interactive'] = 0
 			settings['server'] = 'normal'
-	
-
 	
 	else:
 		print 'Invalid Teragrid server type: ',runLocation,'; exiting...'
@@ -177,29 +171,30 @@ def runPBS(
 				sys.exit()
 			
 		elif runLocation == 'steele' or runLocation == 'abe':
-			os.system(os.path.join(settings['hiddenDir'],settings['qSubFileName']))
+			os.system(os.path.join(settings['hiddenDir'],settings['qSubFileName']))			
 			
-			if settings['interactive'] == 0:
+			if waitForSims == 1:
 				waitForJobs(settings)
+			
 		else:
 			print 'Invalid runLocation : ',runLocation,'; exiting...'
 			import sys
 			sys.exit()
 
-		
-		print '  Collecting results:'
-		collectJobs(settings)
+		if waitForSims == 1:
+			print '  Collecting results:'
+			collectJobs(settings)
 
-		print '  Deleting temporary files:'
-		nukeDirs(settings['hiddenDir'])
+			print '  Deleting temporary files:'
+			nukeDirs(settings['hiddenDir'])
 				
-		# Either local or not, if we did a wallTimeEst, display results:
-		if settings['runType'] == 'wallTimeEstimate':
-			print "********************************"
-			print "* Wall-Time Estimate, each Processor:"
-			print "********************************"
-			for file in getFileIterator(settings['outputDir'], 'wallTimeEstData.dat'):
-				scratch = call('cat ' + file, shell=True)
+			# Either local or not, if we did a wallTimeEst, display results:
+			if settings['runType'] == 'wallTimeEstimate':
+				print "********************************"
+				print "* Wall-Time Estimate, each Processor:"
+				print "********************************"
+				for file in getFileIterator(settings['outputDir'], 'wallTimeEstData.dat'):
+					scratch = call('cat ' + file, shell=True)
 
 	return settings
 	
@@ -265,7 +260,7 @@ def displaySettings(settings, continuePrompt = 1):
 	print "  Nodes: " + str(settings['nodes'])
 	print "  Processors Per Node (PPN): " + str(settings['ppn'])
 	print "  Simulations Per Processor (repsPP): " + str(settings['repspp'])
-	print "  Interactive Mode: " + str(settings['interactive'])
+	print "  Wait for Sims: " + str(settings['waitForSims'])
 	print " "
 	print "Build Details:"	
 	print "  Build Directory: " + settings['buildDir']
