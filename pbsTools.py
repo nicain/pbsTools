@@ -397,7 +397,7 @@ def makeSubmissionFiles(settings):
 	qsubber = open(os.path.join(settings['hiddenDir'],settings['qSubFileName']), 'w')
 	if settings['server']=='debug':
 		qsubber.write(settings['qSubCommand'] + ' -I -l walltime=' + \
-				      str(time.strftime("%H:%M:%S",time.gmtime(settings['wallTime']))) + \
+				      GetInHMS(settings['wallTime']) + \
 				      ',nodes=' + str(settings['nodes']) + ':ppn=' + str(settings['ppn']))
 	else:
 		for i in range(1,settings['nodes']+1):
@@ -410,7 +410,7 @@ def makeSubmissionFiles(settings):
 	for i in range(1,settings['nodes']+1):
 		currentPBSFileName = os.path.join(settings['hiddenDir'], settings['PBSDir'], settings['PBSFileNamePrefix'] + str(i)) + '.pbs'
 		currentNoder=open(currentPBSFileName, 'w')
-		currentNoder.write('#PBS -l walltime=' + str(time.strftime("%H:%M:%S",time.gmtime(settings['wallTime']))) + '\n')
+		currentNoder.write('#PBS -l walltime=' + GetInHMS(settings['wallTime']) + '\n')
 		if settings['runLocation'] == 'abe' or settings['runLocation'] == 'local':
 			currentNoder.write('#PBS -l nodes=1:ppn=' + str(settings['ppn']) + '\n')
 		elif settings['runLocation'] == 'steele':
@@ -632,6 +632,15 @@ def brokenJobRecovery(buildDir = './', hiddenDir = './.submitDir', outputDir = '
 	nukeDirs(settings['hiddenDir'])
 	
 	return
+
+################################################################################
+# Convert seconds to a HMS string:
+def GetInHMS(seconds):
+	hours = seconds / 3600
+	seconds -= 3600*hours
+	minutes = seconds / 60
+	seconds -= 60*minutes
+	return "%02d:%02d:%02d" % (hours, minutes, seconds)
 	
 
 
