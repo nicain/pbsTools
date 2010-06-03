@@ -97,7 +97,6 @@ def runPBS(
 			else: settings['queue'] = queue
 			settings['qSubCommand'] = settings['qSubCommand'] + settings['queue'] + ' '
 			settings['server'] = 'wallTimeEstimate'
-			settings['wallTime'] = 30*60
 			
 		elif runType == 'batch':
 			if nodes == 'default': settings['nodes'] = 1
@@ -120,7 +119,6 @@ def runPBS(
 			else: settings['queue'] = queue
 			settings['qSubCommand'] = settings['qSubCommand'] + settings['queue'] + ' '
 			settings['server'] = 'wallTimeEstimate'
-			settings['wallTime'] = 30*60
 			
 		elif runType == 'batch':
 			if nodes == 'default': settings['nodes'] = 1
