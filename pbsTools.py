@@ -622,7 +622,7 @@ def brokenJobRecovery(buildDir = './', hiddenDir = './.submitDir', outputDir = '
 	collectJobs(settings)
 
 	print '  Deleting temporary files:'
-	nukeDirs(settings['hiddenDir'])
+#	nukeDirs(settings['hiddenDir'])
 	
 	return
 
