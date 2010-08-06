@@ -23,6 +23,23 @@ def runPBS(
 	ppn = 'default', 
 	repspp = 'default',			# Probably never change
 	jobHandle = 'currJob'):		# Probably never change
+    
+	'''
+    #############################################################################
+    runPBS is intended to provide the main functionality of the pbsTools function.  The goal is to provide a single function to call from within a pyhton script, that will take care of all of the details accociated with running an "embarrasingly parallel" pbs job on the TeraGrid.
+    
+    As of now this functionality is limited to the clusters Steele and Abe.  Below are descriptions of the various parameters that can be passed into the function.
+    
+        ARGUMENT DESCRIPTIONS:
+        1) commandString: 
+            * Required argument
+            * The idea that this command will be called, verbatim, at the command line of the remote node of each teragrid .pbs job that you run.  There is one exception to this; the includeIdAsArg will slightly augment the string, and a description of this is in the next argument description.  Sending different inputs to different jobs in the same run can be accompished with includeIdAsArg argumnet.
+
+        2) includeIdAsArg:
+            *
+    
+    ################################################################################
+	'''
 
 	##### Option for runLocation ######
 	# local (default)
