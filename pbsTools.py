@@ -22,7 +22,7 @@ def runPBS(
 	nodes = 'default', 
 	ppn = 'default', 
 	repspp = 'default',			# Probably never change
-	verbose = 'on'):
+	verbose = 1):
 
 	##### Option for runLocation ######
 	# local (default)
@@ -137,7 +137,7 @@ def runPBS(
 		import sys
 		sys.exit()
 		
-	if settings['verbose'] == 'on':
+	if settings['verbose']:
 		displaySettings(settings, continuePrompt = 1)
 
 	if callMake == 1:
@@ -151,12 +151,12 @@ def runPBS(
 
 	if dryRun == 1:
 		print 'Dryrunning; Command to be called: ' + os.path.join(settings['hiddenDir'],settings['qSubFileName'])
-		if settings['verbose'] == 'on':
+		if settings['verbose']:
 			userInput = raw_input("  Press <return> to continue...")
 	else:
 		if runLocation == 'local':
 			print 'Local run mode selected.'
-			if settings['verbose'] == 'on':
+			if settings['verbose']:
 				userInput = raw_input("  Press <return> to continue...")
 
 			if settings['runType'] == 'wallTimeEstimate':
@@ -331,7 +331,7 @@ def createJobDirs(settings):
 	while breakout != True:
 		if os.path.isdir(settings['hiddenDir']):
 			print '    Hidden directory already exist: ' + settings['hiddenDir']
-			if settings['verbose'] == 'on':
+			if settings['verbose']:
 				userInput = raw_input("    Press \'Q\' to exit, \'O\' to overwrite, or enter a new directory name: ")
 				if userInput.upper()=='O':
 					nukeDirs(settings['hiddenDir'])
@@ -345,7 +345,7 @@ def createJobDirs(settings):
 					breakout = False
 				else:
 					settings['hiddenDir'] = userInput
-			elif settings['verbose'] == 'off':
+			elif not settings['verbose']:
 				print '		Overwriting hidden directory'
 				nukeDirs(settings['hiddenDir'])
 				os.makedirs(settings['hiddenDir'])
@@ -363,7 +363,7 @@ def createJobDirs(settings):
 	while breakout != True:
 		if os.path.isdir(settings['outputDir']):
 			print '    Output directory already exist: ' + settings['outputDir']
-			if settings['verbose'] == 'on':
+			if settings['verbose']:
 				userInput = raw_input("    Press \'Q\' to exit, \'O\' to overwrite, or enter a new directory name: ")
 				if userInput.upper()=='O':
 					nukeDirs(settings['outputDir'])
@@ -378,7 +378,7 @@ def createJobDirs(settings):
 					breakout = False
 				else:
 					settings['outputDir'] = userInput
-			elif settings['verbose'] == 'off':
+			elif not settings['verbose']:
 				print '		Overwriting output directory'
 				nukeDirs(settings['outputDir'])
 				os.makedirs(settings['outputDir'])
