@@ -22,24 +22,8 @@ def runPBS(
 	nodes = 'default', 
 	ppn = 'default', 
 	repspp = 'default',			# Probably never change
-	jobHandle = 'currJob'):		# Probably never change
-    
-	'''
-    #############################################################################
-    runPBS is intended to provide the main functionality of the pbsTools function.  The goal is to provide a single function to call from within a pyhton script, that will take care of all of the details accociated with running an "embarrasingly parallel" pbs job on the TeraGrid.
-    
-    As of now this functionality is limited to the clusters Steele and Abe.  Below are descriptions of the various parameters that can be passed into the function.
-    
-        ARGUMENT DESCRIPTIONS:
-        1) commandString: 
-            * Required argument
-            * The idea that this command will be called, verbatim, at the command line of the remote node of each teragrid .pbs job that you run.  There is one exception to this; the includeIdAsArg will slightly augment the string, and a description of this is in the next argument description.  Sending different inputs to different jobs in the same run can be accompished with includeIdAsArg argumnet.
-
-        2) includeIdAsArg:
-            *
-    
-    ################################################################################
-	'''
+	jobHandle = 'currJob',		# Probably never change
+	verbose = 'on'):
 
 	##### Option for runLocation ######
 	# local (default)
@@ -82,6 +66,7 @@ def runPBS(
 	settings['hiddenDir'] = os.path.abspath(os.path.expanduser(hiddenDir))
 	settings['outputDir'] = os.path.abspath(os.path.expanduser(outputDir))
 	settings['jobHandle'] = jobHandle
+	settings['verbose'] = verbose
 
 	settings['cwd'] = os.getcwd()
 	settings['qSubCommand'] = 'qsub -S /bin/tcsh -q '
@@ -94,7 +79,7 @@ def runPBS(
 			settings['qSubCommand'] = settings['qSubCommand'] + 'LOCAL WALLTIMEEST '
 			settings['server'] = 'LOCAL WALLTIMEEST'
 			settings['wallTime'] = 30*60
-			
+
 		elif runType == 'batch':
 			if nodes == 'default': settings['nodes'] = 1
 			else: settings['nodes'] = nodes
@@ -104,7 +89,7 @@ def runPBS(
 			else: settings['repspp'] = repspp
 			settings['qSubCommand'] = 'LOCAL BATCH'
 			settings['server'] = 'LOCAL BATCH'
-	
+
 	elif runLocation == 'abe':
 		if runType == 'wallTimeEstimate':
 			settings['nodes'] = 1
@@ -114,7 +99,7 @@ def runPBS(
 			else: settings['queue'] = queue
 			settings['qSubCommand'] = settings['qSubCommand'] + settings['queue'] + ' '
 			settings['server'] = 'wallTimeEstimate'
-			
+
 		elif runType == 'batch':
 			if nodes == 'default': settings['nodes'] = 1
 			else: settings['nodes'] = nodes
@@ -126,7 +111,7 @@ def runPBS(
 			else: settings['queue'] = queue
 			settings['qSubCommand'] = settings['qSubCommand'] + settings['queue'] + ' '
 			settings['server'] = 'normal'
-			
+
 	elif runLocation == 'steele':
 		if runType == 'wallTimeEstimate':
 			settings['nodes'] = 1
@@ -136,7 +121,7 @@ def runPBS(
 			else: settings['queue'] = queue
 			settings['qSubCommand'] = settings['qSubCommand'] + settings['queue'] + ' '
 			settings['server'] = 'wallTimeEstimate'
-			
+
 		elif runType == 'batch':
 			if nodes == 'default': settings['nodes'] = 1
 			else: settings['nodes'] = nodes
@@ -148,31 +133,34 @@ def runPBS(
 			else: settings['queue'] = queue
 			settings['qSubCommand'] = settings['qSubCommand'] + settings['queue'] + ' '
 			settings['server'] = 'normal'
-	
+
 	else:
 		print 'Invalid Teragrid server type: ',runLocation,'; exiting...'
 		import sys
 		sys.exit()
-
-	displaySettings(settings, continuePrompt = 1)
+		
+	if settings['verbose'] == 'on':
+		displaySettings(settings, continuePrompt = 1)
 
 	if callMake == 1:
 		os.chdir(settings['buildDir'])
 		call('make',shell=True)
 		os.chdir(settings['cwd'])
-		
+
 	createJobDirs(settings)
 	makeSubmissionFiles(settings)
 	copyFiles(settings)
-	
+
 	if dryRun == 1:
 		print 'Dryrunning; Command to be called: ' + os.path.join(settings['hiddenDir'],settings['qSubFileName'])
-		userInput = raw_input("  Press <return> to continue...")
+		if settings['verbose'] == 'on':
+			userInput = raw_input("  Press <return> to continue...")
 	else:
 		if runLocation == 'local':
 			print 'Local run mode selected.'
-			userInput = raw_input("  Press <return> to continue...")
-			
+			if settings['verbose'] == 'on':
+				userInput = raw_input("  Press <return> to continue...")
+
 			if settings['runType'] == 'wallTimeEstimate':
 				os.chdir(os.path.join(settings['hiddenDir'], settings['jobHandle'] + '_1_' + str(settings['repspp'])))
 				call('python wallTimeEst.py',shell=True)
@@ -184,13 +172,13 @@ def runPBS(
 				print 'Invalid runType : ',runType,'; exiting...'
 				import sys
 				sys.exit()
-			
+
 		elif runLocation == 'steele' or runLocation == 'abe':
 			os.system(os.path.join(settings['hiddenDir'],settings['qSubFileName']))			
-			
+
 			if waitForSims == 1:
 				waitForJobs(settings)
-			
+
 		else:
 			print 'Invalid runLocation : ',runLocation,'; exiting...'
 			import sys
@@ -202,7 +190,7 @@ def runPBS(
 
 			print '  Deleting temporary files:'
 			nukeDirs(settings['hiddenDir'])
-				
+
 			# Either local or not, if we did a wallTimeEst, display results:
 			if settings['runType'] == 'wallTimeEstimate':
 				print "********************************"
@@ -212,18 +200,18 @@ def runPBS(
 					scratch = call('cat ' + file, shell=True)
 
 	return settings
-	
 
-	
+
+
 ################################################################################
 # This function collects all of the job outputs into a single place:
 def collectJobs(settings):
 	import os, uuid, shutil, glob
-	
+
 	# Get rid of job controlling scripts; won't need those!
 	nukeDirs(os.path.join(settings['hiddenDir'],settings['PBSDir']))
 	os.remove(os.path.join(settings['hiddenDir'],settings['qSubFileName']))
-	
+
 	# Grab all the files generated by the processing; exclude symbolic links.
 	for root, dirs, files in os.walk(settings['hiddenDir']):
 		for currDir in dirs:
@@ -232,11 +220,11 @@ def collectJobs(settings):
 				for file in files:
 					if not os.path.islink(os.path.abspath(os.path.join(newRoot,file))) and not file == 'jobCompleted':
 						shutil.copyfile(os.path.abspath(os.path.join(newRoot,file)),os.path.join(settings['outputDir'],settings['jobHandle']+'_'+file+'_'+str(uuid.uuid4())))
-	
+
 	# Grab error and output logs for later use.
 	for file in glob.glob(os.path.join(settings['cwd'],settings['PBSFileNamePrefix'] + '*.[eo]*')):
 		shutil.move(file, settings['outputDir'])
-	
+
 	return 0
 
 ################################################################################
@@ -245,10 +233,10 @@ def nukeDirs(deleteDir):
 	import shutil
 
 	shutil.rmtree(deleteDir)
-	
+
 	return 0
-	
-	
+
+
 ################################################################################
 # This function displays the current settings of the job:
 def displaySettings(settings, continuePrompt = 1):
@@ -291,8 +279,8 @@ def displaySettings(settings, continuePrompt = 1):
 	for i in range(len(settings['fileList'])):
 		print "    " + settings['fileList'][i]
 	print "  Total Sims: " + str(settings['nodes']*settings['ppn']*settings['repspp'])
-	
-	
+
+
 	if continuePrompt==1:
 		userInput = raw_input("Press return to continue, or \'C\' to cancel: ")
 		if userInput.upper()=='C':
@@ -307,16 +295,16 @@ def waitForJobs(settings):
 
 	import time, os
 	import progressMeter as pm
-	
+
 	breakout=0
 	maxJobs = settings['nodes']*settings['ppn']*settings['repspp']
 	p = pm.ProgressMeter(total=maxJobs+1)
 	p.update(1)
-	
+
 	numberCompleted = 0
 	while breakout !=1:
 		time.sleep(20)
-		
+
 		# Check each job directory for the standard out file:
 		oldNumberCompleted = numberCompleted
 		numberCompleted = 0
@@ -324,7 +312,7 @@ def waitForJobs(settings):
 			for currDir in dirs:
 				if os.path.isfile(os.path.join(root,currDir,'jobCompleted')):
 					numberCompleted += 1
-		
+
 		numberCompletedThisRound = numberCompleted - oldNumberCompleted
 		if numberCompletedThisRound > 0:
 				p.update(numberCompletedThisRound)
@@ -338,7 +326,7 @@ def waitForJobs(settings):
 # This function creates a sequence of job directories for the pbs script:
 def createJobDirs(settings):
 	import os
-	
+
 	print '  Creating hidden directories and files:'  
 
 	# Check for an allowable hidden directory:
@@ -346,49 +334,70 @@ def createJobDirs(settings):
 	while breakout != True:
 		if os.path.isdir(settings['hiddenDir']):
 			print '    Hidden directory already exist: ' + settings['hiddenDir']
-			userInput = raw_input("    Press \'Q\' to exit, \'O\' to overwrite, or enter a new directory name: ")
-			if userInput.upper()=='O':
+			if settings['verbose'] == 'on':
+				userInput = raw_input("    Press \'Q\' to exit, \'O\' to overwrite, or enter a new directory name: ")
+				if userInput.upper()=='O':
+					nukeDirs(settings['hiddenDir'])
+					os.makedirs(settings['hiddenDir'])
+					breakout = True
+				elif userInput.upper()=='Q':
+					print '    Aborting run...'
+					import sys
+					sys.exit()
+				elif userInput == '':
+					breakout = False
+				else:
+					settings['hiddenDir'] = userInput
+			elif settings['verbose'] == 'off':
+				print '		Overwriting hidden directory'
 				nukeDirs(settings['hiddenDir'])
 				os.makedirs(settings['hiddenDir'])
 				breakout = True
-			elif userInput.upper()=='Q':
-				print '    Aborting run...'
+			else:
+				print '		Invalid verbose option specified... aborting'
 				import sys
 				sys.exit()
-			elif userInput == '':
-				breakout = False
-			else:
-				settings['hiddenDir'] = userInput
 		else:
 			os.makedirs(settings['hiddenDir'])
 			breakout = True
-	
+
 	# Check for an allowable output directory:
 	breakout = False	
 	while breakout != True:
 		if os.path.isdir(settings['outputDir']):
 			print '    Output directory already exist: ' + settings['outputDir']
-			userInput = raw_input("    Press \'Q\' to exit, \'O\' to overwrite, or enter a new directory name: ")
-			if userInput.upper()=='O':
+			if settings['verbose'] == 'on':
+				userInput = raw_input("    Press \'Q\' to exit, \'O\' to overwrite, or enter a new directory name: ")
+				if userInput.upper()=='O':
+					nukeDirs(settings['outputDir'])
+					os.makedirs(settings['outputDir'])
+					breakout = True
+				elif userInput.upper()=='Q':
+					print '    Aborting run...'
+					nukeDirs(settings['hiddenDir'])
+					import sys
+					sys.exit()
+				elif userInput == '':
+					breakout = False
+				else:
+					settings['outputDir'] = userInput
+			elif settings['verbose'] == 'off':
+				print '		Overwriting output directory'
 				nukeDirs(settings['outputDir'])
 				os.makedirs(settings['outputDir'])
 				breakout = True
-			elif userInput.upper()=='Q':
-				print '    Aborting run...'
+			else:
+				print '		Invalid verbose option specified... aborting'
 				nukeDirs(settings['hiddenDir'])
 				import sys
 				sys.exit()
-			elif userInput == '':
-				breakout = False
-			else:
-				settings['outputDir'] = userInput
 		else:
 			os.makedirs(settings['outputDir'])
 			breakout = True
 
-	
+
 	os.mkdir(os.path.join(settings['hiddenDir'], settings['PBSDir']))
-	
+
 	# Run a loop to create subordinate run directories:
 	if settings['runType'] == 'wallTimeEstimate':
 		os.mkdir(os.path.join(settings['hiddenDir'], settings['jobHandle'] + '_1_' + str(settings['repspp'])))
@@ -397,12 +406,12 @@ def createJobDirs(settings):
 			os.mkdir(os.path.join(settings['hiddenDir'], settings['jobHandle'] + '_' + str(i)))
 
 	return 0
-	
+
 ################################################################################
 # This function writes the job submission files:
 def makeSubmissionFiles(settings):
 	import os, time
-	
+
 	# Write qsubber file:
 	qsubber = open(os.path.join(settings['hiddenDir'],settings['qSubFileName']), 'w')
 	if settings['server']=='debug':
@@ -414,7 +423,7 @@ def makeSubmissionFiles(settings):
 			qsubber.write(settings['qSubCommand'] + os.path.join(settings['hiddenDir'], settings['PBSDir'], settings['PBSFileNamePrefix'] + str(i)) + '.pbs\n')
 	qsubber.close()
 	os.system("chmod +x " + os.path.join(settings['hiddenDir'],settings['qSubFileName']))
-	
+
 	# Write currentNode_#.pbs files:
 	counter=0
 	for i in range(1,settings['nodes']+1):
@@ -439,7 +448,7 @@ def makeSubmissionFiles(settings):
 		currentNoder.write('wait' + '\n')
 		currentNoder.close()
 		os.system('chmod +x ' + currentPBSFileName)
-	
+
 	# In wallTimeEstimate mode, write wallTimeEst.py file:
 	if settings['runType'] == 'wallTimeEstimate':
 		currentFileName = os.path.join(settings['hiddenDir'], settings['jobHandle'] + '_1_' + str(settings['repspp']),'wallTimeEst.py')
@@ -461,13 +470,13 @@ def makeSubmissionFiles(settings):
 		currentFile.write('from subprocess import call as call\n')
 		currentFile.write('call("touch jobCompleted", shell=True)')
 		currentFile.close()
-		
+
 	# Write slave_#.csh files
 	if settings['runType'] == 'wallTimeEstimate':
 		iterMax=1
 	else:
 		iterMax=settings['nodes']*settings['ppn']*settings['repspp']
-			
+
 	for i in range(1,iterMax+1):
 		if settings['runType'] == 'wallTimeEstimate':
 			currentSlaveDir = os.path.join(settings['hiddenDir'], settings['jobHandle'] + '_1_' + str(settings['repspp']))
@@ -492,7 +501,7 @@ def makeSubmissionFiles(settings):
 # This function copies relevent source files to the submission directories:
 def copyFiles(settings):
 	import shutil, os
-	
+
 	for file in settings['fileList']:
 		(currDir, currFile) = os.path.split(file)
 		if currDir == '':
@@ -530,10 +539,10 @@ def makeSettingsFile(paramDict, npp, fileName='settingsFile.dat',writeDir='./', 
 	for parameter in params: 
 		settingsList.append(paramDict[parameter])
 	settingsIterator = product(*settingsList)
-	
+
 	# Create list of names to write out:
 	nameList = [param + "=" for param in params]
-	
+
 	# Write settings file:
 	fOut = open(os.path.join(os.path.abspath(os.path.expanduser(writeDir)),fileName),'w')
 	print >> fOut, 'import sys'
@@ -548,7 +557,7 @@ def makeSettingsFile(paramDict, npp, fileName='settingsFile.dat',writeDir='./', 
 			for line in toWriteLineList:
 				print >> fOut, '	' + line
 			print >> fOut, ''
-	
+
 	fOut.close()
 
 	return counter
@@ -557,14 +566,14 @@ def makeSettingsFile(paramDict, npp, fileName='settingsFile.dat',writeDir='./', 
 # This function creates a file iterator based on an input string:
 def getFileIterator(myDir, fileString):
 	import glob, os
-	
+
 	return glob.glob(os.path.join(os.path.abspath(os.path.expanduser(myDir)),'*' + fileString + '*'))
 
 ################################################################################
 # This function loads settings from settings file based on uniqueID
 def pickle(myVars, saveFileName = 'simResults.dat'):
 	import pickle as pickleModule
-	
+
 	fOut = open(saveFileName,'w')
 	pickleModule.dump(myVars,fOut)
 	fOut.close()	
@@ -574,7 +583,7 @@ def pickle(myVars, saveFileName = 'simResults.dat'):
 # This function loads settings from settings file based on uniqueID
 def unpickle(saveFileName = 'simResults.dat'):
 	import pickle as pickleModule
-	
+
 	fIn = open(saveFileName,'r')
 	myPickle = pickleModule.load(fIn)
 	fIn.close()	
@@ -584,7 +593,7 @@ def unpickle(saveFileName = 'simResults.dat'):
 # This function gets saved variables from a list of similarly named files in a directory:
 def getFromPickleJar(loadDir = 'simResults', fileNameSubString = 'simResults.dat'): 
 	import pickle
-	
+
 	# Get file iterator:
 	fileIterator = getFileIterator(loadDir, fileNameSubString)
 
@@ -597,9 +606,9 @@ def getFromPickleJar(loadDir = 'simResults', fileNameSubString = 'simResults.dat
 		fIn = open(myFile)
 		resultList[counter] =  pickle.load(fIn)
 		counter += 1
-	
+
 	return resultList
-	
+
 ################################################################################
 # For wall time est use:
 def mean(values):
@@ -610,7 +619,7 @@ def stddev(values, meanval=None):
 	"""The standard deviation of a set of values.
 	Pass in the mean if you already know it."""
 	import math
-	
+
 	if meanval == None: meanval = mean(values)
 	return math.sqrt(sum([(x - meanval)**2 for x in values]) / (len(values)-1))
 
@@ -625,22 +634,22 @@ def brokenJobRecovery(buildDir = './', hiddenDir = './.submitDir', outputDir = '
 	settings['hiddenDir'] = os.path.abspath(os.path.expanduser(hiddenDir))
 	settings['outputDir'] = os.path.abspath(os.path.expanduser(outputDir))
 	settings['jobHandle'] = jobHandle
-	
-	
+
+
 	# Definitions, should be same as in runPBS:
 	settings['cwd'] = os.path.abspath(os.path.expanduser(os.getcwd()))
 	settings['qSubFileName'] = 'qsubber.csh'
 	settings['PBSDir'] = 'PBSTemp'
 	settings['jobHandle'] = jobHandle
 	settings['PBSFileNamePrefix'] = 'currentNode_'
-	
+
 	# Recover the job:
 	print '  Collecting results:'
 	collectJobs(settings)
 
 	print '  Deleting temporary files:'
 #	nukeDirs(settings['hiddenDir'])
-	
+
 	return
 
 ################################################################################
@@ -651,8 +660,7 @@ def GetInHMS(seconds):
 	minutes = seconds / 60
 	seconds -= 60*minutes
 	return "%02d:%02d:%02d" % (hours, minutes, seconds)
-	
 
 
-		
-	
+
+
