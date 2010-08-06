@@ -160,12 +160,12 @@ def runPBS(
 				userInput = raw_input("  Press <return> to continue...")
 
 			if settings['runType'] == 'wallTimeEstimate':
-				os.chdir(os.path.join(settings['hiddenDir'], currJob + '_1_' + str(settings['repspp'])))
+				os.chdir(os.path.join(settings['hiddenDir'], 'currJob_1_' + str(settings['repspp'])))
 				call('python wallTimeEst.py',shell=True)
 				os.chdir(settings['cwd'])
 			elif settings['runType'] == 'batch':
 				for i in range(1,settings['nodes']*settings['ppn']*settings['repspp']+1):
-					call(os.path.join(settings['hiddenDir'], currJob + '_' + str(i),settings['slaveFileNamePrefix'] + str(i) + '.csh'),shell=True)
+					call(os.path.join(settings['hiddenDir'], 'currJob_' + str(i),settings['slaveFileNamePrefix'] + str(i) + '.csh'),shell=True)
 			else:
 				print 'Invalid runType : ',runType,'; exiting...'
 				import sys
@@ -217,7 +217,7 @@ def collectJobs(settings):
 			for newRoot, newDirs, files in os.walk(fullCurrDir):
 				for file in files:
 					if not os.path.islink(os.path.abspath(os.path.join(newRoot,file))) and not file == 'jobCompleted':
-						shutil.copyfile(os.path.abspath(os.path.join(newRoot,file)),os.path.join(settings['outputDir'],currJob+'_'+file+'_'+str(uuid.uuid4())))
+						shutil.copyfile(os.path.abspath(os.path.join(newRoot,file)),os.path.join(settings['outputDir'],'currJob_'+file+'_'+str(uuid.uuid4())))
 
 	# Grab error and output logs for later use.
 	for file in glob.glob(os.path.join(settings['cwd'],settings['PBSFileNamePrefix'] + '*.[eo]*')):
@@ -397,10 +397,10 @@ def createJobDirs(settings):
 
 	# Run a loop to create subordinate run directories:
 	if settings['runType'] == 'wallTimeEstimate':
-		os.mkdir(os.path.join(settings['hiddenDir'], currJob + '_1_' + str(settings['repspp'])))
+		os.mkdir(os.path.join(settings['hiddenDir'], 'currJob_1_' + str(settings['repspp'])))
 	else:
 		for i in range(1,settings['nodes']*settings['ppn']*settings['repspp']+1):
-			os.mkdir(os.path.join(settings['hiddenDir'], currJob + '_' + str(i)))
+			os.mkdir(os.path.join(settings['hiddenDir'], 'currJob_' + str(i)))
 
 	return 0
 
@@ -436,26 +436,26 @@ def makeSubmissionFiles(settings):
 		for j in range(1,settings['ppn']+1):
 			if settings['runType'] == 'wallTimeEstimate':
 				counter=counter+1
-				currentNoder.write('cd ' + os.path.join(settings['hiddenDir'], currJob + '_1_' + str(settings['repspp'])) + '\n')
+				currentNoder.write('cd ' + os.path.join(settings['hiddenDir'], 'currJob_1_' + str(settings['repspp'])) + '\n')
 				currentNoder.write('python wallTimeEst.py & \n')
 			else:
 				for k in range(1,settings['repspp']+1):
 					counter=counter+1
-					currentNoder.write(   os.path.join(settings['hiddenDir'], currJob + '_' + str(counter), settings['slaveFileNamePrefix'] + str(counter) + '.csh') + ' &' + '\n')
+					currentNoder.write(   os.path.join(settings['hiddenDir'], 'currJob_' + str(counter), settings['slaveFileNamePrefix'] + str(counter) + '.csh') + ' &' + '\n')
 		currentNoder.write('wait' + '\n')
 		currentNoder.close()
 		os.system('chmod +x ' + currentPBSFileName)
 
 	# In wallTimeEstimate mode, write wallTimeEst.py file:
 	if settings['runType'] == 'wallTimeEstimate':
-		currentFileName = os.path.join(settings['hiddenDir'], currJob + '_1_' + str(settings['repspp']),'wallTimeEst.py')
+		currentFileName = os.path.join(settings['hiddenDir'], 'currJob_1_' + str(settings['repspp']),'wallTimeEst.py')
 		currentFile=open(currentFileName, 'w')
 
 		currentFile.write('import timeit\n')
 		currentFile.write('import pbsTools as pt\n')
 		currentFile.write('numberOfTrials=' + str(settings['wallTimeEstCount']) + '\n')
 		currentFile.write('repspp=' + str(settings['repspp']) + '\n')
-		currentFile.write('totalTime=timeit.Timer(\'os.system(\"' + os.path.join(settings['hiddenDir'], currJob + '_1_' + str(settings['repspp']), settings['slaveFileNamePrefix'] + str(1) + '.csh') + '\")\',\'import os\').repeat(*[numberOfTrials,repspp])\n')
+		currentFile.write('totalTime=timeit.Timer(\'os.system(\"' + os.path.join(settings['hiddenDir'], 'currJob_1_' + str(settings['repspp']), settings['slaveFileNamePrefix'] + str(1) + '.csh') + '\")\',\'import os\').repeat(*[numberOfTrials,repspp])\n')
 		currentFile.write('myMean = pt.mean(totalTime)\n')
 		currentFile.write('myStddev = pt.stddev(totalTime)\n')
 		currentFile.write('f = open(\'wallTimeEstData.dat\', \'w\')\n')
@@ -476,9 +476,9 @@ def makeSubmissionFiles(settings):
 
 	for i in range(1,iterMax+1):
 		if settings['runType'] == 'wallTimeEstimate':
-			currentSlaveDir = os.path.join(settings['hiddenDir'], currJob + '_1_' + str(settings['repspp']))
+			currentSlaveDir = os.path.join(settings['hiddenDir'], 'currJob_1_' + str(settings['repspp']))
 		else:
-			currentSlaveDir = os.path.join(settings['hiddenDir'], currJob + '_' + str(i))
+			currentSlaveDir = os.path.join(settings['hiddenDir'], 'currJob_' + str(i))
 
 		currentSlaveFileName = os.path.join(currentSlaveDir, settings['slaveFileNamePrefix'] + str(i) + '.csh')
 		currentSlaver=open(currentSlaveFileName, 'w')
@@ -508,10 +508,10 @@ def copyFiles(settings):
 		else:
 			sourceDir = currDir
 		if settings['runType'] == 'wallTimeEstimate':
-			os.symlink(os.path.join(sourceDir,file),os.path.join(settings['hiddenDir'], currJob + '_1_' + str(settings['repspp']),currFile))
+			os.symlink(os.path.join(sourceDir,file),os.path.join(settings['hiddenDir'], 'currJob_1_' + str(settings['repspp']),currFile))
 		else:
 			for i in range(1,settings['nodes']*settings['ppn']*settings['repspp']+1):
-				os.symlink(os.path.join(sourceDir,file),os.path.join(settings['hiddenDir'], currJob + '_' + str(i),currFile))currJob
+				os.symlink(os.path.join(sourceDir,file),os.path.join(settings['hiddenDir'], 'currJob_' + str(i),currFile))
 
 ################################################################################
 # This function creates settings file based on a parameter sweep dictionary
