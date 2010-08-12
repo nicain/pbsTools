@@ -752,6 +752,7 @@ def startServers(settings):
 	
 	# Define useful sub-functions:
 	def check_output(input):
+		print input
 		return sp.Popen(input,stdout=sp.PIPE,stdin=sp.PIPE,shell=True).communicate()
 		
 	def sshCallReturn(command,server, background=0):
