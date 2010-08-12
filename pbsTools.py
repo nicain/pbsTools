@@ -310,6 +310,8 @@ def displaySettings(settings, continuePrompt = 1):
 		banner = banner + 'DRYRUN '
 	if settings['runLocation'] == 'local': 
 		banner = banner + 'LOCALRUN '
+	elif settings['runLocation'] == 'cluster': 
+		banner = banner + 'CLUSTERRUN '
 	if settings['runType'] == 'wallTimeEstimate': 
 		banner = banner + 'WALLTIMEESTIMATE '
 
