@@ -243,7 +243,8 @@ def runPBS(
 			for input in jobList:
 				counter += 1
 				jobs[counter] = job_server.submit(doTheMagic,(input[0],input[1],counter)
-				print jobs[counter]()
+			for job in jobs:
+				print job()
 		
 			# Wait for the jobs:  (Note: this is forced for now... might change later... )
 			if waitForSims == 1:
