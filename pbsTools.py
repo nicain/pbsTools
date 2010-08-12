@@ -197,10 +197,6 @@ def runPBS(
 				waitForJobs(settings)
 		
 		elif runLocation == 'cluster':
-
-			# Start up servers:
-			print 'Cluster run mode selected.'
-			passwd, deadTime = startServers(settings)
 			
 			# This is the function that runs each job, over the shared file system:
 			def doTheMagic(where, fileName, index):
@@ -229,6 +225,14 @@ def runPBS(
 				import sys
 				sys.exit()
 			
+			print 'debug0'
+			
+			# Start up servers:
+			print 'Cluster run mode selected.'
+			passwd, deadTime = startServers(settings)
+			
+			print 'debug1'
+			
 			# Pause for N seconds, and connect to servers:
 			pauseTime = 5
 			sleep(pauseTime)
@@ -236,6 +240,8 @@ def runPBS(
 			print '  Servers: ' + str(job_server.get_active_nodes())[1:-1]
 			if settings['verbose']:
 				userInput = raw_input("  Press <return> to continue... ("+str(deadTime-pauseTime) +" seconds until server inactivity shutdown)")
+			
+			print 'debug2'
 				
 			# Farm out the jobs to the server:
 			jobs = [job_server.submit(doTheMagic,(input[0],input[1]), (), ("subprocess","os")) for input in jobList]
@@ -769,7 +775,10 @@ def startServers(settings):
 		return int(nAvailCPU)
 
 	# Query server availibility, and start up the servers:
+	debugCounter=1
 	for server in settings['clustServerList']:
+		print 'Inner: ' + str(debugCounter)
+		debugCounter += 1
 		currNumCPU = str(getNumCurrAvailProc(server))
 		command = 'nohup ppserver.py -w '+currNumCPU+' -t '+str(deadTime)+' -s '+passwd+' &'
 		sshCallReturn(command, server, background=1)
