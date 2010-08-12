@@ -28,6 +28,7 @@ def runPBS(
 	# local (default)
 	# steele
 	# abe
+	# cluster
 
 	##### Option for runType ######
 	# wallTimeEstimate (default)
@@ -39,7 +40,7 @@ def runPBS(
 	# Check to make sure fileList is in fact a list:
 	print fileList
 	if not isinstance(fileList,(list,tuple)):
-		print('  fileList is not a list! Making it a list with one element...')
+		print('  fileList is not a list! Making it a list with at least one element...')
 		fileList = (fileList,)
 
 	# Create dictionary of all settings:
@@ -50,6 +51,7 @@ def runPBS(
 	settings['slaveFileNamePrefix'] = 'slave_'		# Probably never need to change
 	settings['PBSDir'] = 'PBSTemp'					# Probably never need to change
 	settings['SlaveDir'] = 'SlaveTemp'				# Probably never need to change
+	settings['clustServerList'] = ['watermelon','pineapple']
 
 	settings['commandString'] = commandString
 	settings['includeIDAsArg'] = includeIDAsArg
@@ -77,7 +79,6 @@ def runPBS(
 			settings['qSubCommand'] = settings['qSubCommand'] + 'LOCAL WALLTIMEEST '
 			settings['server'] = 'LOCAL WALLTIMEEST'
 			settings['wallTime'] = 30*60
-
 		elif runType == 'batch':
 			if nodes == 'default': settings['nodes'] = 1
 			else: settings['nodes'] = nodes
@@ -87,6 +88,26 @@ def runPBS(
 			else: settings['repspp'] = repspp
 			settings['qSubCommand'] = 'LOCAL BATCH'
 			settings['server'] = 'LOCAL BATCH'
+			
+	elif runLocation == 'cluster':
+		if runType == 'wallTimeEstimate':
+			settings['nodes'] = 1
+			settings['ppn'] = 1
+			settings['repspp'] = 1
+			settings['qSubCommand'] = settings['qSubCommand'] + 'CLUSTER WALLTIMEEST '
+			settings['server'] = 'CLUSTER WALLTIMEEST'
+			settings['wallTime'] = 30*60
+			settings['waitForSims'] = 1
+		elif runType == 'batch':
+			if nodes == 'default': settings['nodes'] = 1
+			else: settings['nodes'] = nodes
+			if ppn == 'default': settings['ppn']=1
+			else: settings['ppn'] = ppn
+			if repspp == 'default': settings['repspp']=1
+			else: settings['repspp'] = repspp
+			settings['qSubCommand'] = 'CLUSTER BATCH'
+			settings['server'] = 'CLUSTER BATCH'
+			settings['waitForSims'] = 1
 
 	elif runLocation == 'abe':
 		if runType == 'wallTimeEstimate':
@@ -97,7 +118,6 @@ def runPBS(
 			else: settings['queue'] = queue
 			settings['qSubCommand'] = settings['qSubCommand'] + settings['queue'] + ' '
 			settings['server'] = 'wallTimeEstimate'
-
 		elif runType == 'batch':
 			if nodes == 'default': settings['nodes'] = 1
 			else: settings['nodes'] = nodes
@@ -119,7 +139,6 @@ def runPBS(
 			else: settings['queue'] = queue
 			settings['qSubCommand'] = settings['qSubCommand'] + settings['queue'] + ' '
 			settings['server'] = 'wallTimeEstimate'
-
 		elif runType == 'batch':
 			if nodes == 'default': settings['nodes'] = 1
 			else: settings['nodes'] = nodes
@@ -158,7 +177,6 @@ def runPBS(
 			print 'Local run mode selected.'
 			if settings['verbose']:
 				userInput = raw_input("  Press <return> to continue...")
-
 			if settings['runType'] == 'wallTimeEstimate':
 				os.chdir(os.path.join(settings['hiddenDir'], 'currJob_1_' + str(settings['repspp'])))
 				call('python wallTimeEst.py',shell=True)
@@ -173,7 +191,55 @@ def runPBS(
 
 		elif runLocation == 'steele' or runLocation == 'abe':
 			os.system(os.path.join(settings['hiddenDir'],settings['qSubFileName']))			
+			if waitForSims == 1:
+				waitForJobs(settings)
+		
+		elif runLocation == 'cluster':
 
+			# Start up servers:
+			print 'Cluster run mode selected.'
+			startServers(settings)
+			
+			# Pause for 5 seconds, and connect to servers:
+			time.sleep(5)
+			job_server = pp.Server(ppservers=settings['clustServerList'])
+			print '  Servers: ' + str(job_server.get_active_nodes())[1:-1]
+			if settings['verbose']:
+				userInput = raw_input("  Press <return> to continue... (20 seconds until server inactivity shutdown)")
+			
+			# This is the function that runs each job, over the shared file system:
+			def doTheMagic(where, fileName, index):
+				subprocess.call(os.path.join(where,fileName),shell=True,cwd=where)
+				return '  Job '+str(i)+' started...' 
+
+			# Gather names and directories of all jobs:
+			jobList=[]
+			if settings['runType'] == 'wallTimeEstimate':
+				
+				# In this case, only one file to run:
+				currLocation = os.path.join(settings['hiddenDir'], 'currJob_1_' + str(settings['repspp']))
+				currName = 'wallTimeEst.py'
+				jobList.append((currLocation, currName))
+				
+			elif settings['runType'] == 'batch':
+				
+				# In this case, create a list of each file to be run:
+				for i in range(1,settings['nodes']*settings['ppn']*settings['repspp']+1):
+					currLocation = os.path.join(settings['hiddenDir'], 'currJob_' + str(i))
+					currName = settings['slaveFileNamePrefix'] + str(i) + '.csh'
+					jobList.append((currLocation, currName, i))
+				
+			else:
+				print 'Invalid runType : ',runType,'; exiting...'
+				import sys
+				sys.exit()
+				
+			# Farm out the jobs to the server:
+			jobs = [job_server.submit(doTheMagic,(input[0],input[1]), (), ("subprocess","os")) for input in jobList]
+			for job in jobs:
+				print job()
+		
+			# Wait for the jobs:  (Note: this is forced for now... might change later... )
 			if waitForSims == 1:
 				waitForJobs(settings)
 
@@ -198,8 +264,6 @@ def runPBS(
 					scratch = call('cat ' + file, shell=True)
 
 	return settings
-
-
 
 ################################################################################
 # This function collects all of the job outputs into a single place:
@@ -451,6 +515,8 @@ def makeSubmissionFiles(settings):
 		currentFileName = os.path.join(settings['hiddenDir'], 'currJob_1_' + str(settings['repspp']),'wallTimeEst.py')
 		currentFile=open(currentFileName, 'w')
 
+		currentFile.write('#!/usr/bin/env python\n')
+		currentFile.write('\n')
 		currentFile.write('import timeit\n')
 		currentFile.write('import pbsTools as pt\n')
 		currentFile.write('numberOfTrials=' + str(settings['wallTimeEstCount']) + '\n')
@@ -467,6 +533,8 @@ def makeSubmissionFiles(settings):
 		currentFile.write('from subprocess import call as call\n')
 		currentFile.write('call("touch jobCompleted", shell=True)')
 		currentFile.close()
+		
+		os.system('chmod +x ' + currentFileName)
 
 	# Write slave_#.csh files
 	if settings['runType'] == 'wallTimeEstimate':
@@ -655,6 +723,65 @@ def GetInHMS(seconds):
 	seconds -= 60*minutes
 	return "%02d:%02d:%02d" % (hours, minutes, seconds)
 
+################################################################################
+# Start up cluster servers:	
+def startServers(settings):
+
+	# Import necessary packages:
+	import subprocess as sp
+	import random
+	import time
+	import pp
+	
+	# Set a timeout, to kill servers if nothing connects/after completion:
+	deadTime = str(30)
+	
+	# Set up a password, to keep this job unique:
+	passwd = str(random.randint(10000,99999))
+	
+	# Define useful sub-functions:
+	def check_output(input):
+		return sp.Popen(input,stdout=sp.PIPE,stdin=sp.PIPE,shell=True).communicate()
+		
+	def sshCallReturn(command,server):
+		sshCommand = 'ssh ' + server + ' \'' + command + '\''
+		return check_output(sshCommand) 
+
+	def getCurrLoad(server):
+		command = "sar | tail -n 2 | head -n 1"	
+		output = sshCallReturn(command, server)[0].strip().split()
+		totalLoad = float(output[-1])
+		return totalLoad/100
+
+	def getNumCurrAvailProc(server):
+		command = "cat /proc/cpuinfo | grep processor | wc -l"
+		output = sshCallReturn(command, server)[0].strip().split()
+		nCPU = float(output[0])
+		totalLoad = getCurrLoad(server)
+		nAvailCPU = round(nCPU*totalLoad)
+		return int(nAvailCPU)
+
+	# Query server availibility, and start up the servers:
+	for server in settings['clustServerList']:
+		currNumCPU = getNumCurrAvailProc(server)
+		command = 'nohup ppserver.py -w '+currNumCPU+' -t '+deadTime+' -s '+passwd+' &'
+		sshCallReturn(command, servers)
+	
+	return
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
 
 
 
