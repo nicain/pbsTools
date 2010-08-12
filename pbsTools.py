@@ -739,7 +739,7 @@ def startServers(settings):
 	import pp
 	
 	# Set a timeout, to kill servers if nothing connects/after completion:
-	deadTime = 30
+	deadTime = 60
 	
 	# Set up a password, to keep this job unique:
 	passwd = str(random.randint(10000,99999))
