@@ -202,6 +202,11 @@ def runPBS(
 			print 'Cluster run mode selected.'
 			passwd, deadTime = startServers(settings)
 			
+			# This is the function that runs each job, over the shared file system:
+			def doTheMagic(where, fileName, index):
+				subprocess.call(os.path.join(where,fileName),shell=True,cwd=where)
+				return '  Job '+str(i)+' started...' 
+			
 			# Gather names and directories of all jobs:
 			jobList=[]
 			if settings['runType'] == 'wallTimeEstimate':
@@ -210,11 +215,6 @@ def runPBS(
 				currLocation = os.path.join(settings['hiddenDir'], 'currJob_1_' + str(settings['repspp']))
 				currName = 'wallTimeEst.py'
 				jobList.append((currLocation, currName))
-			
-			# This is the function that runs each job, over the shared file system:
-			def doTheMagic(where, fileName, index):
-				subprocess.call(os.path.join(where,fileName),shell=True,cwd=where)
-				return '  Job '+str(i)+' started...' 
 				
 			elif settings['runType'] == 'batch':
 				
