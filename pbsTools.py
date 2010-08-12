@@ -767,7 +767,7 @@ def startServers(settings):
 	for server in settings['clustServerList']:
 		currNumCPU = str(getNumCurrAvailProc(server))
 		command = 'nohup ppserver.py -w '+currNumCPU+' -t '+deadTime+' -s '+passwd+' &'
-		sshCallReturn(command, servers)
+		sshCallReturn(command, server)
 	
 	return
 		
