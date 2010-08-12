@@ -238,9 +238,12 @@ def runPBS(
 				userInput = raw_input("  Press <return> to continue... ("+str(deadTime-pauseTime) +" seconds until server inactivity shutdown)")
 				
 			# Farm out the jobs to the server:
-			jobs = [job_server.submit(doTheMagic,(input[0],input[1]), (), ("subprocess","os")) for input in jobList]
-			for job in jobs:
-				print job()
+			counter = 0
+			jobs=[0]*len(jobList)
+			for input in jobList:
+				counter += 1
+				jobs[counter] = job_server.submit(doTheMagic,(input[0],input[1],counter)
+				print jobs[counter]()
 		
 			# Wait for the jobs:  (Note: this is forced for now... might change later... )
 			if waitForSims == 1:
