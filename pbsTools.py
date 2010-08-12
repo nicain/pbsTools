@@ -242,7 +242,7 @@ def runPBS(
 			jobs=[0]*len(jobList)
 			for input in jobList:
 				counter += 1
-				jobs[counter] = job_server.submit(doTheMagic,(input[0],input[1],counter)
+				jobs[counter] = job_server.submit(doTheMagic,(input[0],input[1],counter))
 			for job in jobs:
 				print job()
 		
