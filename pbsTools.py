@@ -200,20 +200,8 @@ def runPBS(
 
 			# Start up servers:
 			print 'Cluster run mode selected.'
-			startServers(settings)
+			passwd, deadTime = startServers(settings)
 			
-			# Pause for 5 seconds, and connect to servers:
-			sleep(5)
-			job_server = pp.Server(ppservers=settings['clustServerList'])
-			print '  Servers: ' + str(job_server.get_active_nodes())[1:-1]
-			if settings['verbose']:
-				userInput = raw_input("  Press <return> to continue... (20 seconds until server inactivity shutdown)")
-			
-			# This is the function that runs each job, over the shared file system:
-			def doTheMagic(where, fileName, index):
-				subprocess.call(os.path.join(where,fileName),shell=True,cwd=where)
-				return '  Job '+str(i)+' started...' 
-
 			# Gather names and directories of all jobs:
 			jobList=[]
 			if settings['runType'] == 'wallTimeEstimate':
@@ -222,6 +210,11 @@ def runPBS(
 				currLocation = os.path.join(settings['hiddenDir'], 'currJob_1_' + str(settings['repspp']))
 				currName = 'wallTimeEst.py'
 				jobList.append((currLocation, currName))
+			
+			# This is the function that runs each job, over the shared file system:
+			def doTheMagic(where, fileName, index):
+				subprocess.call(os.path.join(where,fileName),shell=True,cwd=where)
+				return '  Job '+str(i)+' started...' 
 				
 			elif settings['runType'] == 'batch':
 				
@@ -235,6 +228,14 @@ def runPBS(
 				print 'Invalid runType : ',runType,'; exiting...'
 				import sys
 				sys.exit()
+			
+			# Pause for N seconds, and connect to servers:
+			pauseTime = 5
+			sleep(pauseTime)
+			job_server = pp.Server(ppservers=settings['clustServerList'], secret = passwd)
+			print '  Servers: ' + str(job_server.get_active_nodes())[1:-1]
+			if settings['verbose']:
+				userInput = raw_input("  Press <return> to continue... ("+str(deadTime-pauseTime) +" seconds until server inactivity shutdown)")
 				
 			# Farm out the jobs to the server:
 			jobs = [job_server.submit(doTheMagic,(input[0],input[1]), (), ("subprocess","os")) for input in jobList]
@@ -738,7 +739,7 @@ def startServers(settings):
 	import pp
 	
 	# Set a timeout, to kill servers if nothing connects/after completion:
-	deadTime = str(30)
+	deadTime = 30
 	
 	# Set up a password, to keep this job unique:
 	passwd = str(random.randint(10000,99999))
@@ -747,8 +748,10 @@ def startServers(settings):
 	def check_output(input):
 		return sp.Popen(input,stdout=sp.PIPE,stdin=sp.PIPE,shell=True).communicate()
 		
-	def sshCallReturn(command,server):
+	def sshCallReturn(command,server, backgroud=0):
 		sshCommand = 'ssh ' + server + ' \'' + command + '\''
+		if background == 1:
+			sshCommand = sshCommand + ' &'
 		return check_output(sshCommand) 
 
 	def getCurrLoad(server):
@@ -768,10 +771,10 @@ def startServers(settings):
 	# Query server availibility, and start up the servers:
 	for server in settings['clustServerList']:
 		currNumCPU = str(getNumCurrAvailProc(server))
-		command = 'nohup ppserver.py -w '+currNumCPU+' -t '+deadTime+' -s '+passwd+' &'
-		sshCallReturn(command, server)
+		command = 'nohup ppserver.py -w '+currNumCPU+' -t '+str(deadTime)+' -s '+passwd+' &'
+		sshCallReturn(command, server, backgroud=1)
 	
-	return
+	return (passwd, deadTime)
 		
 		
 		
