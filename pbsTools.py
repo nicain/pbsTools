@@ -225,13 +225,9 @@ def runPBS(
 				import sys
 				sys.exit()
 			
-			print 'debug0'
-			
 			# Start up servers:
 			print 'Cluster run mode selected.'
 			passwd, deadTime = startServers(settings)
-			
-			print 'debug1'
 			
 			# Pause for N seconds, and connect to servers:
 			pauseTime = 5
@@ -240,8 +236,6 @@ def runPBS(
 			print '  Servers: ' + str(job_server.get_active_nodes())[1:-1]
 			if settings['verbose']:
 				userInput = raw_input("  Press <return> to continue... ("+str(deadTime-pauseTime) +" seconds until server inactivity shutdown)")
-			
-			print 'debug2'
 				
 			# Farm out the jobs to the server:
 			jobs = [job_server.submit(doTheMagic,(input[0],input[1]), (), ("subprocess","os")) for input in jobList]
@@ -751,15 +745,15 @@ def startServers(settings):
 	passwd = str(random.randint(10000,99999))
 	
 	# Define useful sub-functions:
-	def check_output(input):
-		print input
-		return sp.Popen(input,stdout=sp.PIPE,stdin=sp.PIPE,shell=True).communicate()
-		
-	def sshCallReturn(command,server, background=0):
+	def check_output(input, getReturn = 1):
+		if getReturn == 1:
+			return sp.Popen(input,stdout=sp.PIPE,stdin=sp.PIPE,shell=True).communicate()
+		else:
+			return sp.Popen(input,stdin=sp.PIPE,shell=True).communicate()
+			
+	def sshCallReturn(command,server, getReturn = 1):
 		sshCommand = 'ssh ' + server + ' \'' + command + '\''
-		if background == 1:
-			sshCommand = sshCommand + ' &'
-		return check_output(sshCommand) 
+		return check_output(sshCommand, getReturn = getReturn) 
 
 	def getCurrLoad(server):
 		command = "sar | tail -n 2 | head -n 1"	
@@ -776,13 +770,10 @@ def startServers(settings):
 		return int(nAvailCPU)
 
 	# Query server availibility, and start up the servers:
-	debugCounter=1
 	for server in settings['clustServerList']:
-		print 'Inner: ' + str(debugCounter)
-		debugCounter += 1
 		currNumCPU = str(getNumCurrAvailProc(server))
 		command = 'nohup ppserver.py -w '+currNumCPU+' -t '+str(deadTime)+' -s '+passwd+' &'
-		sshCallReturn(command, server, background=1)
+		sshCallReturn(command, server, getReturn=0)
 	
 	return (passwd, deadTime)
 		
