@@ -36,6 +36,7 @@ def runPBS(
 
 	import os
 	from subprocess import call as call
+	from time import sleep
 
 	# Check to make sure fileList is in fact a list:
 	print fileList
@@ -201,7 +202,7 @@ def runPBS(
 			startServers(settings)
 			
 			# Pause for 5 seconds, and connect to servers:
-			time.sleep(5)
+			sleep(5)
 			job_server = pp.Server(ppservers=settings['clustServerList'])
 			print '  Servers: ' + str(job_server.get_active_nodes())[1:-1]
 			if settings['verbose']:
