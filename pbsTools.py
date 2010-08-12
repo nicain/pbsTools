@@ -748,7 +748,7 @@ def startServers(settings):
 	def check_output(input):
 		return sp.Popen(input,stdout=sp.PIPE,stdin=sp.PIPE,shell=True).communicate()
 		
-	def sshCallReturn(command,server, backgroud=0):
+	def sshCallReturn(command,server, background=0):
 		sshCommand = 'ssh ' + server + ' \'' + command + '\''
 		if background == 1:
 			sshCommand = sshCommand + ' &'
@@ -772,7 +772,7 @@ def startServers(settings):
 	for server in settings['clustServerList']:
 		currNumCPU = str(getNumCurrAvailProc(server))
 		command = 'nohup ppserver.py -w '+currNumCPU+' -t '+str(deadTime)+' -s '+passwd+' &'
-		sshCallReturn(command, server, backgroud=1)
+		sshCallReturn(command, server, background=1)
 	
 	return (passwd, deadTime)
 		
