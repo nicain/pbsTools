@@ -53,7 +53,8 @@ def runPBS(
 	settings['slaveFileNamePrefix'] = 'slave_'		# Probably never need to change
 	settings['PBSDir'] = 'PBSTemp'					# Probably never need to change
 	settings['SlaveDir'] = 'SlaveTemp'				# Probably never need to change
-	settings['clustServerList'] = ('pineapple',) # Must be tuple, not list
+	ppservers = ('pineapple','watermelon')			# Must be tuple, not list
+	settings['clustServerList'] = ppservers
 
 	settings['commandString'] = commandString
 	settings['includeIDAsArg'] = includeIDAsArg
@@ -236,10 +237,10 @@ def runPBS(
 			# Connect to servers:
 			print '  Connecting to servers...'
 			print settings['clustServerList']
-			job_server = pp.Server(ppservers=settings['clustServerList'], secret = passwd)
+			job_server = pp.Server(ppservers=ppservers, secret = passwd)
 			print '    Done.'
+			sleep(5)
 			print '  Servers: ' + str(job_server.get_active_nodes())[1:-1]
-			print job_server.get_active_nodes()
 			if settings['verbose']:
 				userInput = raw_input("  Press <return> to continue... ("+str(deadTime-pauseTime) +" seconds until server inactivity shutdown)")
 				
