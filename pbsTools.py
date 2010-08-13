@@ -263,7 +263,7 @@ def runPBS(
 			jobs=[0]*len(jobList)
 			for input in jobList:
 				jobs[counter] = job_server.submit(doTheMagic,(input[0],input[1],niceLevel), (), ("subprocess","os"))
-				print '  Job '+str(counter+1)+' started... (nice = ' + str(niceLevel) + ')' 
+				print '    Job '+str(counter+1)+' started... (nice = ' + str(niceLevel) + ')' 
 				counter += 1
 		
 			# Wait for the jobs:  (Note: this is forced for now... might change later... )
