@@ -755,7 +755,7 @@ def startServers(settings):
 	deadTime = 60
 	
 	# Set up a password, to keep this job unique:
-	passwd = str(random.randint(10000,99999))
+	passwd = '100'#str(random.randint(10000,99999))
 	
 	# Define useful sub-functions:
 	def check_output(input, getReturn = 1):
