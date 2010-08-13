@@ -247,8 +247,8 @@ def runPBS(
 			for server in activeServers.keys():
 				totalCPUs = totalCPUs + activeServers[server]
 				if server is not 'local':
-					if server[-1] == ':':
-						serverNice = server[:-1]
+					if server.count(':') > 0:
+						serverNice = server.split(':')[0]
 					else:
 						serverNice = server
 					print '    ' + serverNice + ': ' + str(activeServers[server])
