@@ -199,9 +199,9 @@ def runPBS(
 			if waitForSims == 1:
 				waitForJobs(settings)
 		
-		print 'nice -n ' + str(settings['niceNess'])
-		
 		elif runLocation == 'cluster':
+			
+			print 'nice -n ' + str(settings['niceNess'])
 			
 			# This is the function that runs each job, over the shared file system:
 			def doTheMagic(where, fileName):
