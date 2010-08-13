@@ -232,7 +232,7 @@ def runPBS(
 			pauseTime = 5
 			print 'Cluster run mode selected.'
 			print '  Starting up servers...'
-			passwd, deadTime = startServers(settings)
+			passwd, deadTime = startServers(settings['clustServerList'])
 			sleep(pauseTime)
 			print '    Done.'
 			
@@ -759,7 +759,7 @@ def GetInHMS(seconds):
 
 ################################################################################
 # Start up cluster servers:	
-def startServers(settings):
+def startServers(serverList):
 
 	# Import necessary packages:
 	import subprocess as sp
@@ -800,7 +800,7 @@ def startServers(settings):
 		return int(nAvailCPU)
 
 	# Query server availibility, and start up the servers:
-	for server in settings['clustServerList']:
+	for server in serverList:
 		currNumCPU = str(getNumCurrAvailProc(server))
 		command = 'nohup ppserver.py -w '+currNumCPU+' -t '+str(deadTime)+' -s '+passwd+' &'
 		sshCallReturn(command, server, getReturn=0, background=1)
