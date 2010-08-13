@@ -226,13 +226,17 @@ def runPBS(
 				sys.exit()
 			
 			# Start up servers:
-			print 'Cluster run mode selected.'
-			passwd, deadTime = startServers(settings)
-			
-			# Pause for N seconds, and connect to servers:
 			pauseTime = 25
+			print 'Cluster run mode selected.'
+			print '  Starting up servers...'
+			passwd, deadTime = startServers(settings)
 			sleep(pauseTime)
+			print '    Done.'
+			
+			# Connect to servers:
+			print '  Connecting to servers...'
 			job_server = pp.Server(ppservers=settings['clustServerList'], secret = passwd)
+			print '    Done.'
 			print '  Servers: ' + str(job_server.get_active_nodes())[1:-1]
 			if settings['verbose']:
 				userInput = raw_input("  Press <return> to continue... ("+str(deadTime-pauseTime) +" seconds until server inactivity shutdown)")
