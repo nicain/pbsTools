@@ -365,6 +365,11 @@ def waitForJobs(settings):
 
 	import time, os
 	import progressMeter as pm
+	
+	if (settings['runLocation'] == 'abe') or (settings['runLocation'] == 'steele'):
+		sleepTime=20
+	else:
+		sleepTime=3
 
 	breakout=0
 	maxJobs = settings['nodes']*settings['ppn']*settings['repspp']
@@ -373,7 +378,7 @@ def waitForJobs(settings):
 
 	numberCompleted = 0
 	while breakout !=1:
-		time.sleep(20)
+		time.sleep(sleepTime)
 
 		# Check each job directory for the standard out file:
 		oldNumberCompleted = numberCompleted
