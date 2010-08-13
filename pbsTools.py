@@ -236,10 +236,9 @@ def runPBS(
 			
 			# Connect to servers:
 			print '  Connecting to servers...'
-			print settings['clustServerList']
-			job_server = pp.Server(ppservers=ppservers, secret = passwd)
+			job_server = pp.Server(ppservers=ppservers, secret = passwd, ncpus=0)
 			print '    Done.'
-			sleep(5)
+			sleep(1) # God damn.  This took forever to figure out that I needed it...
 			print '  Servers: ' + str(job_server.get_active_nodes())[1:-1]
 			if settings['verbose']:
 				userInput = raw_input("  Press <return> to continue... ("+str(deadTime-pauseTime) +" seconds until server inactivity shutdown)")
