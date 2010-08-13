@@ -23,7 +23,7 @@ def runPBS(
 	ppn = 'default', 
 	repspp = 'default',			# Probably never change
 	verbose = 1,
-	niceNess = 10):
+	niceNess = 0):
 
 	##### Option for runLocation ######
 	# local (default)
@@ -201,12 +201,9 @@ def runPBS(
 		
 		elif runLocation == 'cluster':
 			
-			print 'nice -n ' + str(settings['niceNess'])
-			
 			# This is the function that runs each job, over the shared file system:
 			def doTheMagic(where, fileName):
 				prefix = 'nice -n ' + str(settings['niceNess'])
-				print prefix+' '+os.path.join(where,fileName)
 				subprocess.call(prefix+' '+os.path.join(where,fileName),shell=True,cwd=where)
 				return 0
 			
