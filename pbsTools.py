@@ -201,7 +201,7 @@ def runPBS(
 			
 			# This is the function that runs each job, over the shared file system:
 			def doTheMagic(where, fileName):
-				subprocess.call(os.path.join(where,fileName),shell=True,cwd=where)
+				subprocess.call('nice -n 10 ' + os.path.join(where,fileName),shell=True,cwd=where)
 				return 0
 			
 			# Gather names and directories of all jobs:
@@ -758,17 +758,17 @@ def startServers(settings):
 	passwd = '100'#str(random.randint(10000,99999))
 	
 	# Define useful sub-functions:
-	def check_output(input, getReturn = 1):
-		if getReturn == 1:
-			return sp.Popen(input,stdout=sp.PIPE,stdin=sp.PIPE,shell=True).communicate()
-		else:
-			return sp.Popen(input,stdin=sp.PIPE,shell=True).communicate()
+def check_output(input, getReturn = 1):
+	if getReturn == 1:
+		return sp.Popen(input,stdout=sp.PIPE,stdin=sp.PIPE,shell=True).communicate()
+	else:
+		return sp.Popen(input,stdin=sp.PIPE,shell=True).communicate()
 			
-	def sshCallReturn(command,server, getReturn = 1, background=0):
-		sshCommand = 'ssh ' + server + ' \'' + command + '\''
-		if background == 1:
-			sshCommand = sshCommand + ' &'
-		return check_output(sshCommand, getReturn = getReturn) 
+def sshCallReturn(command,server, getReturn = 1, background=0):
+	sshCommand = 'ssh ' + server + ' \'' + command + '\''
+	if background == 1:
+		sshCommand = sshCommand + ' &'
+	return check_output(sshCommand, getReturn = getReturn) 
 
 	def getCurrLoad(server):
 		command = "sar | tail -n 2 | head -n 1"	
