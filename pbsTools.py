@@ -768,7 +768,7 @@ def startServers(settings):
 		sshCommand = 'ssh ' + server + ' \'' + command + '\''
 		if background == 1:
 			sshCommand = sshCommand + ' &'
-		return check_output(sshCommand, getReturn = getReturn) 
+		return check_output(sshCommand, getReturn = getReturn)
 
 	def getCurrLoad(server):
 		command = "sar | tail -n 2 | head -n 1"	
