@@ -246,7 +246,12 @@ def runPBS(
 			print '  Servers: '
 			for server in activeServers.keys():
 				totalCPUs = totalCPUs + activeServers[server]
-				print '    ' + server + ': ' + str(activeServers[server])
+				if server is not 'local':
+					if server[-1]==':'
+						serverNice = server[:-1]
+					else:
+						serverNice = server
+					print '    ' + serverNice + ': ' + str(activeServers[server])
 
 			if totalCPUs == 0:
 				print '    OOPS! All servers are busy! Running on local machine only ...'
