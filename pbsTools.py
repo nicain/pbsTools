@@ -54,7 +54,7 @@ def runPBS(
 	settings['slaveFileNamePrefix'] = 'slave_'		# Probably never need to change
 	settings['PBSDir'] = 'PBSTemp'					# Probably never need to change
 	settings['SlaveDir'] = 'SlaveTemp'				# Probably never need to change
-	ppservers = ('pineapple','watermelon')#,'kitsap','peach','melon')			# Must be tuple, not list
+	ppservers = ('pineapple','watermelon','peach')#,'kitsap','peach','melon')			# Must be tuple, not list
 	settings['clustServerList'] = ppservers
 
 	settings['commandString'] = commandString
@@ -802,6 +802,7 @@ def startServers(serverList):
 	# Query server availibility, and start up the servers:
 	for server in serverList:
 		currNumCPU = str(getNumCurrAvailProc(server))
+		print '    Starting ' + server 
 		command = 'nohup ppserver.py -w '+currNumCPU+' -t '+str(deadTime)+' -s '+passwd+' &'
 		sshCallReturn(command, server, getReturn=0, background=1)
 	
