@@ -53,7 +53,7 @@ def runPBS(
 	settings['slaveFileNamePrefix'] = 'slave_'		# Probably never need to change
 	settings['PBSDir'] = 'PBSTemp'					# Probably never need to change
 	settings['SlaveDir'] = 'SlaveTemp'				# Probably never need to change
-	settings['clustServerList'] = ('watermelon','pineapple') # Must be tuple, not list
+	settings['clustServerList'] = ('pineapple',) # Must be tuple, not list
 
 	settings['commandString'] = commandString
 	settings['includeIDAsArg'] = includeIDAsArg
