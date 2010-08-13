@@ -241,7 +241,20 @@ def runPBS(
 			job_server = pp.Server(ppservers=ppservers, secret = passwd, ncpus=0)
 			print '    Done.'
 			sleep(1) # God damn.  This took forever to figure out that I needed it...
-			print '  Servers: ' + str(job_server.get_active_nodes())[1:-1]
+			activeServers = job_server.get_active_nodes()
+			print '  Servers: ' + str(activeServers)[1:-1]
+			
+			# Check to ensure some servers connected:
+			totalCPUs = 0
+			for server in activeServers.keys():
+				totalCPUs = totalCPUs + activeServers[server]
+			if totalCPUs == 0:
+				print '    OOPS! All servers are busy! Running on local machine only ...'
+				job_server.set_ncpus(ncpus='autodetect')
+				sleep(1) # God damn.  This took forever to figure out that I needed it...
+				activeServers = job_server.get_active_nodes()
+				print '  Servers: ' + str(activeServers)[1:-1]
+			
 			if settings['verbose']:
 				userInput = raw_input("  Press <return> to continue... ("+str(deadTime-pauseTime) +" seconds until server inactivity shutdown)")
 				
@@ -250,7 +263,7 @@ def runPBS(
 			jobs=[0]*len(jobList)
 			for input in jobList:
 				jobs[counter] = job_server.submit(doTheMagic,(input[0],input[1],niceLevel), (), ("subprocess","os"))
-				print '  Job '+str(counter+1)+' started...' 
+				print '  Job '+str(counter+1)+' started... (nice = ' + str(niceLevel) + ')' 
 				counter += 1
 		
 			# Wait for the jobs:  (Note: this is forced for now... might change later... )
