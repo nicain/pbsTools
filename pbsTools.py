@@ -201,7 +201,7 @@ def runPBS(
 			# This is the function that runs each job, over the shared file system:
 			def doTheMagic(where, fileName, index):
 				subprocess.call(os.path.join(where,fileName),shell=True,cwd=where)
-				return '  Job '+str(i)+' started...' 
+				return '  Job '+str(index)+' started...' 
 			
 			# Gather names and directories of all jobs:
 			jobList=[]
