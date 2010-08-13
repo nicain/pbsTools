@@ -280,7 +280,14 @@ def runPBS(
 			collectJobs(settings)
 
 			print '  Deleting temporary files:'
-			nukeDirs(settings['hiddenDir'])
+			while True:
+				nukeDirs(settings['hiddenDir'])
+				if os.path.isdir(settings['hiddenDir']):
+					print 'fail'
+					sleep(1)
+				else:
+					break
+
 
 			# Either local or not, if we did a wallTimeEst, display results:
 			if settings['runType'] == 'wallTimeEstimate':
@@ -320,18 +327,9 @@ def collectJobs(settings):
 # This function deletes a directory:
 def nukeDirs(deleteDir):
 	import shutil
-	from time import sleep
-	import os
 	
-	while True:
-		shutil.rmtree(deleteDir,ignore_errors=True)
-		if os.path.isdir(deleteDir):
-			print 'fail'
-			sleep(1)
-		else:
-			break
-
-
+	shutil.rmtree(deleteDir,ignore_errors=True)
+	
 	return 0
 
 
