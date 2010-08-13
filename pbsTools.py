@@ -203,7 +203,7 @@ def runPBS(
 			
 			# This is the function that runs each job, over the shared file system:
 			def doTheMagic(where, fileName):
-				subprocess.call('nice -n ' + str(niceLevel) +' ' + os.path.join(where,fileName),shell=True,cwd=where)
+				subprocess.call('nice -n ' + str(10) +' ' + os.path.join(where,fileName),shell=True,cwd=where)
 				return 0
 			
 			# Gather names and directories of all jobs:
