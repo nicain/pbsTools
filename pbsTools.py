@@ -242,12 +242,12 @@ def runPBS(
 			print '    Done.'
 			sleep(1) # God damn.  This took forever to figure out that I needed it...
 			activeServers = job_server.get_active_nodes()
-			print '  Servers: ' + str(activeServers)[1:-1]
-			
-			# Check to ensure some servers connected:
 			totalCPUs = 0
+			print '  Servers: '
 			for server in activeServers.keys():
 				totalCPUs = totalCPUs + activeServers[server]
+				print '    ' + server + ': ' + str(activeServers[server])
+
 			if totalCPUs == 0:
 				print '    OOPS! All servers are busy! Running on local machine only ...'
 				job_server.set_ncpus(ncpus='autodetect')
