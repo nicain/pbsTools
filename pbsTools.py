@@ -22,8 +22,7 @@ def runPBS(
 	nodes = 'default', 
 	ppn = 'default', 
 	repspp = 'default',			# Probably never change
-	verbose = 1,
-	niceNess = 0):
+	verbose = 1):
 
 	##### Option for runLocation ######
 	# local (default)
@@ -71,7 +70,6 @@ def runPBS(
 	settings['hiddenDir'] = os.path.abspath(os.path.expanduser(hiddenDir))
 	settings['outputDir'] = os.path.abspath(os.path.expanduser(outputDir))
 	settings['verbose'] = verbose
-	settings['niceNess'] = niceNess
 
 	settings['cwd'] = os.getcwd()
 	settings['qSubCommand'] = 'qsub -S /bin/tcsh -q '
@@ -203,8 +201,7 @@ def runPBS(
 			
 			# This is the function that runs each job, over the shared file system:
 			def doTheMagic(where, fileName):
-				prefix = 'nice -n ' + str(settings['niceNess'])
-				subprocess.call(prefix+' '+os.path.join(where,fileName),shell=True,cwd=where)
+				subprocess.call(os.path.join(where,fileName),shell=True,cwd=where)
 				return 0
 			
 			# Gather names and directories of all jobs:
