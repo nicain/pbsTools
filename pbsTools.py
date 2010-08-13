@@ -201,6 +201,9 @@ def runPBS(
 		
 		elif runLocation == 'cluster':
 			
+			print niceLevel
+			print str(niceLevel)
+			
 			# This is the function that runs each job, over the shared file system:
 			def doTheMagic(where, fileName):
 				subprocess.call('nice -n ' + str(10) +' ' + os.path.join(where,fileName),shell=True,cwd=where)
