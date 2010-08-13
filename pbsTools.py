@@ -758,17 +758,17 @@ def startServers(settings):
 	passwd = '100'#str(random.randint(10000,99999))
 	
 	# Define useful sub-functions:
-def check_output(input, getReturn = 1):
-	if getReturn == 1:
-		return sp.Popen(input,stdout=sp.PIPE,stdin=sp.PIPE,shell=True).communicate()
-	else:
-		return sp.Popen(input,stdin=sp.PIPE,shell=True).communicate()
+	def check_output(input, getReturn = 1):
+		if getReturn == 1:
+			return sp.Popen(input,stdout=sp.PIPE,stdin=sp.PIPE,shell=True).communicate()
+		else:
+			return sp.Popen(input,stdin=sp.PIPE,shell=True).communicate()
 			
-def sshCallReturn(command,server, getReturn = 1, background=0):
-	sshCommand = 'ssh ' + server + ' \'' + command + '\''
-	if background == 1:
-		sshCommand = sshCommand + ' &'
-	return check_output(sshCommand, getReturn = getReturn) 
+	def sshCallReturn(command,server, getReturn = 1, background=0):
+		sshCommand = 'ssh ' + server + ' \'' + command + '\''
+		if background == 1:
+			sshCommand = sshCommand + ' &'
+		return check_output(sshCommand, getReturn = getReturn) 
 
 	def getCurrLoad(server):
 		command = "sar | tail -n 2 | head -n 1"	
