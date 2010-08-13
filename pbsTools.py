@@ -325,7 +325,7 @@ def nukeDirs(deleteDir):
 	
 	while True:
 		shutil.rmtree(deleteDir,ignore_errors=True)
-		if os.path.isdir(deleteDir)
+		if os.path.isdir(deleteDir):
 			print 'fail'
 			sleep(1)
 		else:
