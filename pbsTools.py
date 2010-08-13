@@ -54,7 +54,7 @@ def runPBS(
 	settings['slaveFileNamePrefix'] = 'slave_'		# Probably never need to change
 	settings['PBSDir'] = 'PBSTemp'					# Probably never need to change
 	settings['SlaveDir'] = 'SlaveTemp'				# Probably never need to change
-	ppservers = ('pineapple','watermelon')			# Must be tuple, not list
+	ppservers = ('pineapple','watermelon',)			# Must be tuple, not list
 	settings['clustServerList'] = ppservers
 
 	settings['commandString'] = commandString
@@ -263,7 +263,7 @@ def runPBS(
 			jobs=[0]*len(jobList)
 			for input in jobList:
 				jobs[counter] = job_server.submit(doTheMagic,(input[0],input[1],niceLevel), (), ("subprocess","os"))
-				print '    Job '+str(counter+1)+' started... (nice = ' + str(niceLevel) + ')' 
+				print '    Job '+str(counter+1)+' submitted... (nice = ' + str(niceLevel) + ')' 
 				counter += 1
 		
 			# Wait for the jobs:  (Note: this is forced for now... might change later... )
@@ -320,8 +320,13 @@ def collectJobs(settings):
 # This function deletes a directory:
 def nukeDirs(deleteDir):
 	import shutil
-
-	shutil.rmtree(deleteDir)
+	from time import sleep
+	
+	try:
+		shutil.rmtree(deleteDir)
+	except:
+		sleep(1)
+		nukeDirs(deleteDir)
 
 	return 0
 
