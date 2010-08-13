@@ -326,9 +326,8 @@ def nukeDirs(deleteDir):
 		try:
 			shutil.rmtree(deleteDir)
 			break
-		except Exception as inst:
-			print type(inst)
-			print inst.args
+		except:
+			print 'fail'
 			sleep(1)
 
 	return 0
