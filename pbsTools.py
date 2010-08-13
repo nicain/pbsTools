@@ -54,7 +54,7 @@ def runPBS(
 	settings['slaveFileNamePrefix'] = 'slave_'		# Probably never need to change
 	settings['PBSDir'] = 'PBSTemp'					# Probably never need to change
 	settings['SlaveDir'] = 'SlaveTemp'				# Probably never need to change
-	ppservers = ('pineapple','watermelon',)			# Must be tuple, not list
+	ppservers = ('pineapple','watermelon','kitsap','peach','melon','')			# Must be tuple, not list
 	settings['clustServerList'] = ppservers
 
 	settings['commandString'] = commandString
@@ -322,11 +322,14 @@ def nukeDirs(deleteDir):
 	import shutil
 	from time import sleep
 	
-	try:
-		shutil.rmtree(deleteDir)
-	except:
-		sleep(1)
-		nukeDirs(deleteDir)
+	while True:
+		try:
+			shutil.rmtree(deleteDir)
+			break
+		except Exception as inst:
+			print type(inst)
+			print inst.args
+			sleep(1)
 
 	return 0
 
