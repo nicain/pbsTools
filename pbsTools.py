@@ -269,6 +269,9 @@ def runPBS(
 			# Wait for the jobs:  (Note: this is forced for now... might change later... )
 			if waitForSims == 1:
 				waitForJobs(settings)
+				
+			# When done, print stats:
+			job_server.print_stats()
 
 		else:
 			print 'Invalid runLocation : ',runLocation,'; exiting...'
