@@ -226,7 +226,7 @@ def runPBS(
 				sys.exit()
 			
 			# Start up servers:
-			pauseTime = 25
+			pauseTime = 5
 			print 'Cluster run mode selected.'
 			print '  Starting up servers...'
 			passwd, deadTime = startServers(settings)
@@ -235,6 +235,7 @@ def runPBS(
 			
 			# Connect to servers:
 			print '  Connecting to servers...'
+			print settings['clustServerList']
 			job_server = pp.Server(ppservers=settings['clustServerList'], secret = passwd)
 			print '    Done.'
 			print '  Servers: ' + str(job_server.get_active_nodes())[1:-1]
