@@ -201,12 +201,9 @@ def runPBS(
 		
 		elif runLocation == 'cluster':
 			
-			print niceLevel
-			print str(niceLevel)
-			
 			# This is the function that runs each job, over the shared file system:
-			def doTheMagic(where, fileName):
-				subprocess.call('nice -n ' + str(10) +' ' + os.path.join(where,fileName),shell=True,cwd=where)
+			def doTheMagic(where, fileName, niceLevel):
+				subprocess.call('nice -n ' + str(niceLevel) +' ' + os.path.join(where,fileName),shell=True,cwd=where)
 				return 0
 			
 			# Gather names and directories of all jobs:
@@ -252,7 +249,7 @@ def runPBS(
 			counter = 0
 			jobs=[0]*len(jobList)
 			for input in jobList:
-				jobs[counter] = job_server.submit(doTheMagic,(input[0],input[1]), (), ("subprocess","os"))
+				jobs[counter] = job_server.submit(doTheMagic,(input[0],input[1],niceLevel), (), ("subprocess","os"))
 				print '  Job '+str(counter+1)+' started...' 
 				counter += 1
 		
