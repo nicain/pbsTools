@@ -321,14 +321,16 @@ def collectJobs(settings):
 def nukeDirs(deleteDir):
 	import shutil
 	from time import sleep
+	import os
 	
 	while True:
-		try:
-			shutil.rmtree(deleteDir,ignore_errors=True)
-			break
-		except:
+		shutil.rmtree(deleteDir,ignore_errors=True)
+		if os.path.isdir(deleteDir)
 			print 'fail'
 			sleep(1)
+		else:
+			break
+
 
 	return 0
 
