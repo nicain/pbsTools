@@ -275,8 +275,10 @@ def runPBS(
 			if waitForSims == 1:
 				waitForJobs(settings)
 				
-			# When done, print stats:
+			# When done, print stats and close out:
 			job_server.print_stats()
+			job_server.destroy()
+			
 
 		else:
 			print 'Invalid runLocation : ',runLocation,'; exiting...'
