@@ -240,7 +240,7 @@ def runPBS(
 			print '  Connecting to servers...'
 			job_server = pp.Server(ppservers=ppservers, secret = passwd, ncpus=0)
 			print '    Done.'
-			sleep(1) # God damn.  This took forever to figure out that I needed it...
+			sleep(5) # God damn.  This took forever to figure out that I needed it...
 			activeServers = job_server.get_active_nodes()
 			totalCPUs = 0
 			print '  Servers: '
