@@ -815,12 +815,11 @@ def startServers(serverList):
 	for server in serverList:
 		currNumCPU = str(getNumCurrAvailProc(server))
 		print '    Starting ' + server 
-		command = 'nohup ppserver.py -d -w '+currNumCPU+' -t '+str(deadTime)+' -s '+passwd+' &>! ~/local/logs/'+server+'_debug.log &'
+		command = 'nohup ppserver.py -d -w '+currNumCPU+' -t '+str(deadTime)+' -s '+passwd+' > ~/local/logs/'+server+'_debug.log 2>&1 &'
 		print command
 		sshCallReturn(command, server, getReturn=0, background=1)
 	
 	return (passwd, deadTime)
-		
 		
 		
 		
