@@ -23,7 +23,7 @@ def runPBS(
 	ppn = 'default', 
 	repspp = 'default',			# Probably never change
 	verbose = 1,
-	niceLevel = 20):top
+	niceLevel = 20):
 
 	##### Option for runLocation ######
 	# local (default)
