@@ -23,7 +23,7 @@ def runPBS(
 	ppn = 'default', 
 	repspp = 'default',			# Probably never change
 	verbose = 1,
-	niceLevel = 20):
+	niceLevel = 20):top
 
 	##### Option for runLocation ######
 	# local (default)
@@ -38,7 +38,6 @@ def runPBS(
 	import os
 	from subprocess import call as call
 	from time import sleep
-	import pp
 
 	# Check to make sure fileList is in fact a list:
 	print fileList
@@ -200,6 +199,9 @@ def runPBS(
 				waitForJobs(settings)
 		
 		elif runLocation == 'cluster':
+			
+			# Ill need this:
+			import pp
 			
 			# This is the function that runs each job, over the shared file system:
 			def doTheMagic(where, fileName, niceLevel):
