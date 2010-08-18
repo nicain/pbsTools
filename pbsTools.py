@@ -275,7 +275,7 @@ def runPBS(
 		
 			# Wait for the jobs:  (Note: this is forced for now... might change later... )
 			if waitForSims == 1:
-				waitForJobs(settings)
+				waitForJobs(settings, job_server=job_server)
 				
 			# When done, print stats and close out:
 			job_server.print_stats()
@@ -393,7 +393,7 @@ def displaySettings(settings, continuePrompt = 1):
 
 ################################################################################
 # This function pauses the script until all teragrid jobs are done:
-def waitForJobs(settings):
+def waitForJobs(settings,job_server = 0):
 
 	import time, os
 	import progressMeter as pm
@@ -411,6 +411,8 @@ def waitForJobs(settings):
 	numberCompleted = 0
 	while breakout !=1:
 		time.sleep(sleepTime)
+		if not (type(job_server).__name__ == 'int'):
+			job_server.print_stats()
 
 		# Check each job directory for the standard out file:
 		oldNumberCompleted = numberCompleted
@@ -816,7 +818,6 @@ def startServers(serverList):
 		currNumCPU = str(getNumCurrAvailProc(server))
 		print '    Starting ' + server 
 		command = 'nohup ppserver.py -d -w '+currNumCPU+' -t '+str(deadTime)+' -s '+passwd+' > ~/local/logs/'+server+'_debug.log 2>&1 &'
-		print command
 		sshCallReturn(command, server, getReturn=0, background=1)
 	
 	return (passwd, deadTime)
