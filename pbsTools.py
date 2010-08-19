@@ -272,7 +272,7 @@ def runPBS(
 			jobs=[0]*len(jobList)
 			for input in jobList:
 #				jobs[counter] = job_server.submit(doTheMagic,(input[0],input[1],niceLevel), (), ("subprocess","os"))
-				jobs[counter] = job_server.submit(doTheMagic,(input[0],input[1],niceLevel), (), ("time",))
+				jobs[counter] = job_server.submit(doTheMagic,(input[0],input[1],niceLevel), (), ("time","os"))
 				print '    Job '+str(counter+1)+' submitted... (nice = ' + str(niceLevel) + ')' 
 				counter += 1
 		
