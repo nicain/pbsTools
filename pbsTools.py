@@ -205,10 +205,7 @@ def runPBS(
 			
 			# This is the function that runs each job, over the shared file system:
 			def doTheMagic(where, fileName, niceLevel):
-				#subprocess.call('nice -n ' + str(niceLevel) +' ' + os.path.join(where,fileName),shell=True,cwd=where)
-				junk = os.path.join(where,fileName)
-				subprocess.Popen(['ls -rtl'],stdout=subprocess.PIPE,stderr=subprocess.PIPE,shell=True,cwd=where)
-				time.sleep(5)
+				subprocess.Popen('nice -n ' + str(niceLevel) +' ' + os.path.join(where,fileName),stdout=subprocess.PIPE,stderr=subprocess.PIPE,shell=True,cwd=where)
 				return 0
 			
 			# Gather names and directories of all jobs:
@@ -272,8 +269,7 @@ def runPBS(
 			counter = 0
 			jobs=[0]*len(jobList)
 			for input in jobList:
-#				jobs[counter] = job_server.submit(doTheMagic,(input[0],input[1],niceLevel), (), ("subprocess","os"))
-				jobs[counter] = job_server.submit(doTheMagic,(input[0],input[1],niceLevel), (), ("time","os","subprocess"))
+				jobs[counter] = job_server.submit(doTheMagic,(input[0],input[1],niceLevel), (), ("subprocess","os"))
 				print '    Job '+str(counter+1)+' submitted... (nice = ' + str(niceLevel) + ')' 
 				counter += 1
 		
