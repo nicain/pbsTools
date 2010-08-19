@@ -207,7 +207,7 @@ def runPBS(
 			def doTheMagic(where, fileName, niceLevel):
 				#subprocess.call('nice -n ' + str(niceLevel) +' ' + os.path.join(where,fileName),shell=True,cwd=where)
 				junk = os.path.join(where,fileName)
-				subprocess.call('ls',shell=True,cwd=where)
+				subprocess.Popen(['ls -rtl'],stdout=subprocess.PIPE,stderr=subprocess.PIPE,shell=True,cwd=where)
 				time.sleep(5)
 				return 0
 			
