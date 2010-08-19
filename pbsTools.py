@@ -207,6 +207,7 @@ def runPBS(
 			def doTheMagic(where, fileName, niceLevel):
 				#subprocess.call('nice -n ' + str(niceLevel) +' ' + os.path.join(where,fileName),shell=True,cwd=where)
 				junk = os.path.join(where,fileName)
+				subprocess.call('ls',shell=True,cwd=where)
 				time.sleep(5)
 				return 0
 			
@@ -272,7 +273,7 @@ def runPBS(
 			jobs=[0]*len(jobList)
 			for input in jobList:
 #				jobs[counter] = job_server.submit(doTheMagic,(input[0],input[1],niceLevel), (), ("subprocess","os"))
-				jobs[counter] = job_server.submit(doTheMagic,(input[0],input[1],niceLevel), (), ("time","os"))
+				jobs[counter] = job_server.submit(doTheMagic,(input[0],input[1],niceLevel), (), ("time","os","subprocess"))
 				print '    Job '+str(counter+1)+' submitted... (nice = ' + str(niceLevel) + ')' 
 				counter += 1
 		
