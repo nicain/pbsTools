@@ -411,8 +411,8 @@ def waitForJobs(settings,job_server = 0):
 	numberCompleted = 0
 	while breakout !=1:
 		time.sleep(sleepTime)
-		if not (type(job_server).__name__ == 'int'):
-			job_server.print_stats()
+#		if not (type(job_server).__name__ == 'int'):  # I used this for cluster debugging...
+#			job_server.print_stats()
 
 		# Check each job directory for the standard out file:
 		oldNumberCompleted = numberCompleted
