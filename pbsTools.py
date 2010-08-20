@@ -6,7 +6,6 @@
 # This function runs all of the subordinate functions in concert:
 def runPBS(
 	commandString, 
-	includeIDAsArg = 0, 
 	fileList = (), 
 	callMake = 0, 
 	dryRun = 1,
@@ -57,7 +56,6 @@ def runPBS(
 	settings['clustServerList'] = ppservers
 
 	settings['commandString'] = commandString
-	settings['includeIDAsArg'] = includeIDAsArg
 	settings['fileList'] = fileList
 	settings['callMake'] = callMake	
 	settings['dryRun'] = dryRun
@@ -373,10 +371,7 @@ def displaySettings(settings, continuePrompt = 1):
 	print "  Hidden Directory: " + settings['hiddenDir']
 	print " "
 	print "Run Details:"
-	if settings['includeIDAsArg'] == 0:
-		print "  Command: " + settings['commandString']
-	else:
-		print "  Command: " + settings['commandString'] + ' $ID'
+	print "  Command: " + settings['commandString']
 	print "  Files used: "
 	for i in range(len(settings['fileList'])):
 		print "    " + settings['fileList'][i]
@@ -599,10 +594,7 @@ def makeSubmissionFiles(settings):
 		currentSlaveFileName = os.path.join(currentSlaveDir, settings['slaveFileNamePrefix'] + str(i) + '.csh')
 		currentSlaver=open(currentSlaveFileName, 'w')
 		currentSlaver.write('cd ' + currentSlaveDir + '\n')
-		if settings['includeIDAsArg'] == 0:
-			currentSlaver.write(settings['commandString'] + '\n')
-		else:
-			currentSlaver.write(settings['commandString'] + ' ' + str(i) + '\n')
+		currentSlaver.write(settings['commandString'].replace('$ID',str(i)) + '\n')
 		if settings['runType'] != 'wallTimeEstimate':
 			currentSlaver.write('touch jobCompleted')
 		currentSlaver.close()
