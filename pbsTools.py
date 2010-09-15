@@ -796,7 +796,7 @@ def startServers(serverList):
 		command = "vmstat 1 2 | tail -n 1"
 		output = sshCallReturn(command, server)[0].strip().split()
 		totalLoad = 100 - float(output[-4]) + float(output[-3])
-		print server + ', ' + str(totalLoad)
+		print server + ', ' + str(totalLoad) + '; ' + str(float(output[-4])) + ' ' + str(float(output[-3]))
 		return totalLoad/100
 
 	def getNumCurrAvailProc(server):
