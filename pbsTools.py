@@ -792,7 +792,7 @@ def startServers(serverList):
 		return check_output(sshCommand, getReturn = getReturn)
 
 	def getCurrLoad(server):
-		command = "sar | tail -n 2 | head -n 1"	
+		command = "sar -u 1 1 | tail -n 1"	
 		output = sshCallReturn(command, server)[0].strip().split()
 		totalLoad = float(output[-1])
 		return totalLoad/100
