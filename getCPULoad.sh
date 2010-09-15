@@ -8,4 +8,6 @@
 
 totalUsage=`ps aux|awk 'NR > 0 { s +=$3 }; END {print s}'`
 nCPUs=`cat /proc/cpuinfo | grep processor | wc -l`
-echo $(($totalUsage/$nCPUs))
+result=`echo "$totalUsage / $nCPUs " | bc -l`
+
+echo $result
