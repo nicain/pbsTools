@@ -818,7 +818,7 @@ def startServers(serverList):
 		
 ################################################################################
 # Get number of availiable cores on cluster:	
-def getCores(serverList):
+def getCores(serverList=('pineapple','watermelon','peach','lime','grape','melon','lemon','mango','fig')):
 	
 	# Import necessary packages:
 	import subprocess as sp
