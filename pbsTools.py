@@ -792,9 +792,10 @@ def startServers(serverList):
 		return check_output(sshCommand, getReturn = getReturn)
 
 	def getCurrLoad(server):
-		command = "sar -u 1 2 | tail -n 1"	
+#		command = "sar -u 1 2 | tail -n 1"	
+		command = "vmstat 1 2 | tail -n 1"
 		output = sshCallReturn(command, server)[0].strip().split()
-		totalLoad = float(output[-1])
+		totalLoad = 100 - float(output[-4]) + float(output[-3])
 		return totalLoad/100
 
 	def getNumCurrAvailProc(server):
