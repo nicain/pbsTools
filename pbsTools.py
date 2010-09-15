@@ -857,7 +857,7 @@ def getCores(serverList):
 	for server in serverList:
 		availCores += getNumCurrAvailProc(server)
 		
-	print 'Availiable cores: ' + availCores
+	print 'Availiable cores: ' + str(availCores)
 	
 	return availCores
 		
