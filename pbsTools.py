@@ -816,11 +816,50 @@ def startServers(serverList):
 	
 	return (passwd, deadTime)
 		
+################################################################################
+# Get number of availiable cores on cluster:	
+def getCores(serverList):
+	
+	# Import necessary packages:
+	import subprocess as sp
+	import random
+	import time
 		
+	# Define useful sub-functions:
+	def check_output(input, getReturn = 1):
+		if getReturn == 1:
+			return sp.Popen(input,stdout=sp.PIPE,stdin=sp.PIPE,shell=True).communicate()
+		else:
+			return sp.Popen(input,stdin=sp.PIPE,shell=True).communicate()
+			
+	def sshCallReturn(command,server, getReturn = 1, background=0):
+		sshCommand = 'ssh ' + server + ' \'' + command + '\''
+		if background == 1:
+			sshCommand = sshCommand + ' &'
+		return check_output(sshCommand, getReturn = getReturn)
+
+	def getCurrLoad(server):
+		command = "vmstat 1 2 | tail -n 1"
+		output = sshCallReturn(command, server)[0].strip().split()
+		totalLoad = 100 - (float(output[-4]) + float(output[-3]))
+		return totalLoad/100
+
+	def getNumCurrAvailProc(server):
+		command = "cat /proc/cpuinfo | grep processor | wc -l"
+		output = sshCallReturn(command, server)[0].strip().split()
+		nCPU = float(output[0])
+		totalLoad = getCurrLoad(server)
+		nAvailCPU = round(nCPU*totalLoad)
+		return int(nAvailCPU)
+
+	# Query server availibility:
+	availCores = 0
+	for server in serverList:
+		availCores += getNumCurrAvailProc(server)
 		
-		
-		
-		
+	print 'Availiable cores: ' + availCores
+	
+	return availCores
 		
 		
 		
