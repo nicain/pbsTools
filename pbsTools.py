@@ -52,7 +52,7 @@ def runPBS(
 	settings['slaveFileNamePrefix'] = 'slave_'		# Probably never need to change
 	settings['PBSDir'] = 'PBSTemp'					# Probably never need to change
 	settings['SlaveDir'] = 'SlaveTemp'				# Probably never need to change
-	ppservers = ('pineapple','watermelon','peach','lime','grape','melon')#,'kitsap','peach','melon')			# Must be tuple, not list
+	ppservers = ('pineapple','watermelon','peach','lime','grape','melon','lemon','mango','fig','apple')#,'kitsap','peach','melon')			# Must be tuple, not list
 	settings['clustServerList'] = ppservers
 
 	settings['commandString'] = commandString
