@@ -153,8 +153,29 @@ def runPBS(
 			settings['qSubCommand'] = settings['qSubCommand'] + settings['queue'] + ' '
 			settings['server'] = 'normal'
 
+	elif runLocation == 'hyak':
+		if runType == 'wallTimeEstimate':
+			settings['nodes'] = 1
+			settings['ppn'] = 1
+			settings['repspp'] = 1
+			if queue == 'default': settings['queue'] = 'batch'
+			else: settings['queue'] = queue
+			settings['qSubCommand'] = settings['qSubCommand'] + settings['queue'] + ' '
+			settings['server'] = 'wallTimeEstimate'
+		elif runType == 'batch':
+			if nodes == 'default': settings['nodes'] = 1
+			else: settings['nodes'] = nodes
+			if ppn == 'default': settings['ppn']=8
+			else: settings['ppn'] = ppn
+			if repspp == 'default': settings['repspp']=1
+			else: settings['repspp'] = repspp
+			if queue == 'default': settings['queue'] = 'batch'
+			else: settings['queue'] = queue
+			settings['qSubCommand'] = settings['qSubCommand'] + settings['queue'] + ' '
+			settings['server'] = 'normal'
+
 	else:
-		print 'Invalid Teragrid server type: ',runLocation,'; exiting...'
+		print 'Unrecognized server/runtype type: ',runLocation,'; exiting...'
 		import sys
 		sys.exit()
 		
@@ -181,7 +202,10 @@ def runPBS(
 				userInput = raw_input("  Press <return> to continue...")
 			if settings['runType'] == 'wallTimeEstimate':
 				os.chdir(os.path.join(settings['hiddenDir'], 'currJob_1_' + str(settings['repspp'])))
-				call('python wallTimeEst.py',shell=True)
+				if settings['runLocation'] == 'hyak':
+					call('/usr/lusers/nicain/epd-7.0-2-rh5-x86_64/bin/python wallTimeEst.py',shell=True)
+				else:
+					call('python wallTimeEst.py',shell=True)
 				os.chdir(settings['cwd'])
 			elif settings['runType'] == 'batch':
 				for i in range(1,settings['nodes']*settings['ppn']*settings['repspp']+1):
@@ -191,8 +215,11 @@ def runPBS(
 				import sys
 				sys.exit()
 
-		elif runLocation == 'steele' or runLocation == 'abe':
-			os.system(os.path.join(settings['hiddenDir'],settings['qSubFileName']))			
+		elif runLocation == 'steele' or runLocation == 'abe' or runLocation == 'hyak':
+			print "submitting..."
+			print os.path.join(settings['hiddenDir'],settings['qSubFileName'])
+			os.system(os.path.join(settings['hiddenDir'],settings['qSubFileName']))
+			print "submitted."
 			if waitForSims == 1:
 				waitForJobs(settings)
 		
@@ -234,12 +261,12 @@ def runPBS(
 			print '  Starting up servers...'
 			passwd, deadTime = startServers(settings['clustServerList'])
 			sleep(pauseTime)
-			print '    Done.'
+			print '	Done.'
 			
 			# Connect to servers:
 			print '  Connecting to servers...'
 			job_server = pp.Server(ppservers=ppservers, secret = passwd, ncpus=0)
-			print '    Done.'
+			print '	Done.'
 			sleep(5) # God damn.  This took forever to figure out that I needed it...
 			activeServers = job_server.get_active_nodes()
 			totalCPUs = 0
@@ -251,10 +278,10 @@ def runPBS(
 						serverNice = server.split(':')[0]
 					else:
 						serverNice = server
-					print '    ' + serverNice + ': ' + str(activeServers[server])
+					print '	' + serverNice + ': ' + str(activeServers[server])
 
 			if totalCPUs == 0:
-				print '    OOPS! All servers are busy! Running on local machine only ...'
+				print '	OOPS! All servers are busy! Running on local machine only ...'
 				job_server.set_ncpus(ncpus='autodetect')
 				sleep(1) # God damn.  This took forever to figure out that I needed it...
 				activeServers = job_server.get_active_nodes()
@@ -544,7 +571,10 @@ def makeSubmissionFiles(settings):
 			if settings['runType'] == 'wallTimeEstimate':
 				counter=counter+1
 				currentNoder.write('cd ' + os.path.join(settings['hiddenDir'], 'currJob_1_' + str(settings['repspp'])) + '\n')
-				currentNoder.write('python wallTimeEst.py & \n')
+				if settings['runLocation'] == 'hyak':
+	   				currentNoder.write('/usr/lusers/nicain/epd-7.0-2-rh5-x86_64/bin/python wallTimeEst.py & \n')
+				else:
+	   				currentNoder.write('python wallTimeEst.py & \n')
 			else:
 				for k in range(1,settings['repspp']+1):
 					counter=counter+1
