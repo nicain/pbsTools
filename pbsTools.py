@@ -71,7 +71,7 @@ def runPBS(
 	settings['niceLevel'] = niceLevel
 
 	settings['cwd'] = os.getcwd()
-	settings['qSubCommand'] = 'qsub -S /bin/tcsh -q '
+	settings['qSubCommand'] = 'qsub -V -S /bin/tcsh -q '
 
 	if runLocation == 'local':
 		if runType == 'wallTimeEstimate':
