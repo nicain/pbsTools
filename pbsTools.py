@@ -160,7 +160,7 @@ def runPBS(
 			settings['repspp'] = 1
 			if queue == 'default': settings['queue'] = 'batch'
 			else: settings['queue'] = queue
-			settings['qSubCommand'] = settings['qSubCommand'] + settings['queue'] + ' '
+			settings['qSubCommand'] = settings['qSubCommand'] + settings['queue'] +' -W group_list=' + os.environ['GROUPNAME'] + ' '
 			settings['server'] = 'wallTimeEstimate'
 		elif runType == 'batch':
 			if nodes == 'default': settings['nodes'] = 1
