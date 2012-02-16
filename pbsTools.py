@@ -565,6 +565,14 @@ def makeSubmissionFiles(settings):
 			currentNoder.write('#PBS -l nodes=1:ppn=' + str(settings['ppn']) + '\n')
 		elif settings['runLocation'] == 'steele':
 			currentNoder.write('#PBS -l select=1:ncpus=' + str(settings['ppn']) + '\n')
+		elif settings['runLocation'] == 'hyak':
+			if settings['ppn'] == 8:
+				featureCoreCount = 8
+			elif settings['ppn'] == 12:
+				featureCoreCount = 12
+			else:
+				featureCoreCount = 8
+			currentNoder.write('#PBS -l nodes=1:ppn=' + str(settings['ppn']) + ',feature=' + str(featureCoreCount) + 'core,mem=24gb\n')
 		currentNoder.write('set NP=`wc -l $PBS_NODEFILE | cut -d\'/\' -f1`' + '\n')
 		currentNoder.write('set JOBID=`echo $PBS_JOBID | cut -d\'.\' -f1`' + '\n')
 		for j in range(1,settings['ppn']+1):
